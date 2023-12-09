@@ -313,100 +313,57 @@ void loop()
 
         if (bytesAvailable)
         {
-            // Serial.println(readByte);
-
-            switch (readByte)
+          switch (readByte)
             {
             case '1':
                 if (liveFlag != 0)
-                {
                     liveFlag = 0;
-                    // Serial.println(liveFlag);
-                }
-
                 break;
-
             case '2':
                 if (liveFlag != 1)
-                {
                     liveFlag = 1;
-                    // Serial.println(liveFlag);
-                }
-
                 break;
-
             case '3':
                 if (liveFlag != 2)
-                {
                     liveFlag = 2;
-                    // Serial.println(liveFlag);
-                }
-
                 break;
-
             case '4':
                 if (liveFlag != 3)
-                {
                     liveFlag = 3;
-                    // Serial.print("Live: " + liveFlag);
-                }
-
                 break;
-
             case '6':
                 if (prevFlag != 0)
-                {
                     prevFlag = 0;
-                    // Serial.println(" Prev: " + prevFlag);
-                }
-
                 break;
-
             case '7':
                 if (prevFlag != 1)
-                {
                     prevFlag = 1;
-                    // Serial.println(" Prev: " + prevFlag);
-                }
                 break;
-
             case '8':
                 if (prevFlag != 2)
-                {
                     prevFlag = 2;
-                    // Serial.println(" Prev: " + prevFlag);
-                }
-
                 break;
-
             case '9':
                 if (prevFlag != 3)
-                {
                     prevFlag = 3;
-                    // Serial.println(" Prev: " + prevFlag);
-                }
-
                 break;
-
             default:
                 break;
             }
         }
 
-        for (int i = 0; i < 41; i++)
-        {
+        for (int i = 0; i < 41; i++){
             tallyServer.setTallyFlag(i, 0);
         }
 
-        if (liveFlag == prevFlag)
-        {
+        if (liveFlag == prevFlag){
             tallyServer.setTallyFlag(liveFlag, 3);
         }
-        else
-        {
+        else{
             tallyServer.setTallyFlag(liveFlag, 1);
             tallyServer.setTallyFlag(prevFlag, 2);
         }
+        
         Serial.print("Live: ");
         Serial.print(liveFlag + 1);
         Serial.print(" Prev: ");
