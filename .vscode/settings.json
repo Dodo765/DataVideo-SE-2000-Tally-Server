@@ -1,0 +1,4 @@
+{
+	"cmake.configureOnOpen": true,
+	"cmake.sourceDirectory": "C:/Users/dkawa/Desktop/Programowanie/Arduino/tally server/ATEM_tally_light_with_ESP8266-master/ATEM_tally_light_with_ESP8266-master/.pio/libdeps/ESP8266_test_server/FastLED"
+}
