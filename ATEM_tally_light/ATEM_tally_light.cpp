@@ -1,23 +1,3 @@
-/*
-    Copyright (C) 2023 Aron N. Het Lam, aronhetlam@gmail.com
-
-    This program makes an ESP8266 into a wireless tally light system for ATEM switchers,
-    by using Kasper Skårhøj's (<https://skaarhoj.com>) ATEM client libraries for Arduino.
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
 #include "ATEM_tally_light.hpp"
 
 #ifndef VERSION
@@ -35,51 +15,19 @@
 #define VERSION "Unknown"
 #endif
 
-#ifdef TALLY_TEST_SERVER
 #define DISPLAY_NAME "Tally Test server"
-#else
-#define DISPLAY_NAME "Tally Light"
-#endif
 
 // Include libraries:
-#if ESP32
-#include <esp_wifi.h>
-#include <WebServer.h>
-#include <WiFi.h>
-#else
+
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
-#endif
 
 #include <EEPROM.h>
 #include <ATEMmin.h>
 #include <TallyServer.h>
 #include <FastLED.h>
 
-#if ESP32
-// Define LED1 color pins
-#ifndef PIN_RED1
-#define PIN_RED1 32
-#endif
-#ifndef PIN_GREEN1
-#define PIN_GREEN1 33
-#endif
-#ifndef PIN_BLUE1
-#define PIN_BLUE1 25
-#endif
-
-// Define LED2 color pins
-#ifndef PIN_RED2
-#define PIN_RED2 26
-#endif
-#ifndef PIN_GREEN2
-#define PIN_GREEN2 27
-#endif
-#ifndef PIN_BLUE2
-#define PIN_BLUE2 14
-#endif
-
-#else // ESP8266
+// ESP8266
 // Define LED1 color pins
 #ifndef PIN_RED1
 #define PIN_RED1 16 // D0
@@ -100,7 +48,6 @@
 #endif
 #ifndef PIN_BLUE2
 #define PIN_BLUE2 12 // D6
-#endif
 #endif
 
 // Define LED colors
@@ -155,17 +102,10 @@ CRGB *statusLED;
 bool neopixelsUpdated = false;
 
 // Initialize global variables
-#if ESP32
-WebServer server(80);
-#else
-ESP8266WebServer server(80);
-#endif
 
-#ifndef TALLY_TEST_SERVER
-ATEMmin atemSwitcher;
-#else
+ESP8266WebServer server(80);
+
 int tallyFlag = TALLY_FLAG_OFF;
-#endif
 
 TallyServer tallyServer;
 
@@ -295,11 +235,7 @@ void setup()
 
     // Put WiFi into station mode and make it connect to saved network
     WiFi.mode(WIFI_STA);
-#if ESP32
-    WiFi.setHostname(settings.tallyName);
-#else
     WiFi.hostname(settings.tallyName);
-#endif
     WiFi.setAutoReconnect(true);
     WiFi.begin();
 
@@ -335,9 +271,7 @@ void setup()
     // Set state to connecting before entering loop
     changeState(STATE_CONNECTING_TO_WIFI);
 
-#ifdef TALLY_TEST_SERVER
     tallyServer.setTallySources(40);
-#endif
 }
 
 void loop()
@@ -360,12 +294,9 @@ void loop()
             Serial.println("IP:                  " + WiFi.localIP().toString());
             Serial.println("Subnet Mask:         " + WiFi.subnetMask().toString());
             Serial.println("Gateway IP:          " + WiFi.gatewayIP().toString());
-#ifdef TALLY_TEST_SERVER
+
             Serial.println("Press enter (\\r) to loop through tally states.");
             changeState(STATE_RUNNING);
-#else
-            changeState(STATE_CONNECTING_TO_SWITCHER);
-#endif
         }
         else if (firstRun)
         {
@@ -377,29 +308,8 @@ void loop()
             setStatusLED(LED_WHITE);
         }
         break;
-#ifndef TALLY_TEST_SERVER
-    case STATE_CONNECTING_TO_SWITCHER:
-        // Initialize a connection to the switcher:
-        if (firstRun)
-        {
-            atemSwitcher.begin(settings.switcherIP);
-            // atemSwitcher.serialOutput(0xff); //Makes Atem library print debug info
-            Serial.println("------------------------");
-            Serial.println("Connecting to switcher...");
-            Serial.println((String) "Switcher IP:         " + settings.switcherIP[0] + "." + settings.switcherIP[1] + "." + settings.switcherIP[2] + "." + settings.switcherIP[3]);
-            firstRun = false;
-        }
-        atemSwitcher.runLoop();
-        if (atemSwitcher.isConnected())
-        {
-            changeState(STATE_RUNNING);
-            Serial.println("Connected to switcher");
-        }
-        break;
-#endif
 
     case STATE_RUNNING:
-#ifdef TALLY_TEST_SERVER
 
         if (bytesAvailable)
         {
@@ -502,29 +412,6 @@ void loop()
         Serial.print(" Prev: ");
         Serial.println(prevFlag + 1);
         delay(10);
-#else
-        // Handle data exchange and connection to swithcher
-        atemSwitcher.runLoop();
-
-        int tallySources = atemSwitcher.getTallyByIndexSources();
-        tallyServer.setTallySources(tallySources);
-        for (int i = 0; i < tallySources; i++)
-        {
-            tallyServer.setTallyFlag(i, atemSwitcher.getTallyByIndexTallyFlags(i));
-        }
-
-        // Switch state if ATEM connection is lost...
-        if (!atemSwitcher.isConnected())
-        { // will return false if the connection was lost
-            Serial.println("------------------------");
-            Serial.println("Connection to Switcher lost...");
-            changeState(STATE_CONNECTING_TO_SWITCHER);
-
-            // Reset tally server's tally flags, so clients turn off their lights.
-            tallyServer.resetTallyFlags();
-        }
-
-#endif
 
         // Handle Tally Server
         tallyServer.runLoop();
@@ -548,12 +435,6 @@ void loop()
         Serial.println("------------------------");
         Serial.println("WiFi connection lost...");
         changeState(STATE_CONNECTING_TO_WIFI);
-
-#ifndef TALLY_TEST_SERVER
-        // Force atem library to reset connection, in order for status to read correctly on website.
-        atemSwitcher.begin(settings.switcherIP);
-        atemSwitcher.connect();
-#endif
 
         // Reset tally server's tally flags, They won't get the message, but it'll be reset for when the connectoin is back.
         tallyServer.resetTallyFlags();
@@ -621,46 +502,6 @@ void setLED2(uint8_t color)
 // Set the color of a LED using the given pins
 void setLED(uint8_t color, int pinRed, int pinGreen, int pinBlue)
 {
-#if ESP32
-    switch (color)
-    {
-    case LED_OFF:
-        digitalWrite(pinRed, 0);
-        digitalWrite(pinGreen, 0);
-        digitalWrite(pinBlue, 0);
-        break;
-    case LED_RED:
-        digitalWrite(pinRed, 1);
-        digitalWrite(pinGreen, 0);
-        digitalWrite(pinBlue, 0);
-        break;
-    case LED_GREEN:
-        digitalWrite(pinRed, 0);
-        digitalWrite(pinGreen, 1);
-        digitalWrite(pinBlue, 0);
-        break;
-    case LED_BLUE:
-        digitalWrite(pinRed, 0);
-        digitalWrite(pinGreen, 0);
-        digitalWrite(pinBlue, 1);
-        break;
-    case LED_YELLOW:
-        digitalWrite(pinRed, 1);
-        digitalWrite(pinGreen, 1);
-        digitalWrite(pinBlue, 0);
-        break;
-    case LED_PINK:
-        digitalWrite(pinRed, 1);
-        digitalWrite(pinGreen, 0);
-        digitalWrite(pinBlue, 1);
-        break;
-    case LED_WHITE:
-        digitalWrite(pinRed, 1);
-        digitalWrite(pinGreen, 1);
-        digitalWrite(pinBlue, 1);
-        break;
-    }
-#else
     uint8_t ledBrightness = settings.ledBrightness;
     void (*writeFunc)(uint8_t, uint8_t);
     if (ledBrightness >= 0xff)
@@ -711,7 +552,6 @@ void setLED(uint8_t color, int pinRed, int pinGreen, int pinBlue)
         writeFunc(pinBlue, ledBrightness);
         break;
     }
-#endif
 }
 
 void analogWriteWrapper(uint8_t pin, uint8_t value)
@@ -780,14 +620,7 @@ void printLeds()
 
 int getTallyState(uint16_t tallyNo)
 {
-#ifndef TALLY_TEST_SERVER
-    if (tallyNo >= atemSwitcher.getTallyByIndexSources())
-    { // out of range
-        return TALLY_FLAG_OFF;
-    }
 
-    uint8_t tallyFlag = atemSwitcher.getTallyByIndexTallyFlags(tallyNo);
-#endif
     if (tallyFlag & TALLY_FLAG_PROGRAM)
     {
         return TALLY_FLAG_PROGRAM;
@@ -806,12 +639,7 @@ int getLedColor(int tallyMode, int tallyNo)
 {
     if (tallyMode == MODE_ON_AIR)
     {
-#ifndef TALLY_TEST_SERVER
-        if (atemSwitcher.getStreamStreaming())
-        {
-            return LED_RED;
-        }
-#endif
+
         return LED_OFF;
     }
 
@@ -854,11 +682,7 @@ void handleRoot()
     case WL_DISCONNECTED:
         html += "Tryb stacji niedostępny";
         break;
-#if ESP32
-    default:
-#else
     case -1:
-#endif
         html += "Timeout";
         break;
     }
@@ -881,29 +705,9 @@ void handleRoot()
     html += "</td></tr><tr><td>Brama domyślna: </td><td colspan=\"2\">";
     html += WiFi.gatewayIP().toString();
     html += "</td></tr><tr><td><br></td></tr>";
-#ifndef TALLY_TEST_SERVER
-    html += "<tr><td>ATEM switcher status:</td><td colspan=\"2\">";
-    // if (atemSwitcher.hasInitialized())
-    //     html += "Connected - Initialized";
-    // else
-    if (atemSwitcher.isRejected())
-        html += "Connection rejected - No empty spot";
-    else if (atemSwitcher.isConnected())
-        html += "Connected"; // - Wating for initialization";
-    else if (WiFi.status() == WL_CONNECTED)
-        html += "Disconnected - No response from switcher";
-    else
-        html += "Disconnected - Waiting for WiFi";
-    html += "</td></tr><tr><td>ATEM switcher IP:</td><td colspan=\"2\">";
-    html += (String)settings.switcherIP[0] + '.' + settings.switcherIP[1] + '.' + settings.switcherIP[2] + '.' + settings.switcherIP[3];
-    html += "</td></tr><tr><td><br></td></tr>";
-#endif
+
     html += "<tr bgcolor=\"#777777\"style=\"color:#ffffff;font-size:.8em;\"><td colspan=\"3\"><h2>&nbsp;Ustawienia:</h2></td></tr><tr><td><br></td></tr><form action=\"/save\"method=\"post\"><tr><td>Nazwa urządzenia: </td><td><input type=\"text\"size=\"30\"maxlength=\"30\"name=\"tName\"value=\"";
-#if ESP32
-    html += WiFi.getHostname();
-#else
     html += WiFi.hostname();
-#endif
     html += "\"required/></td></tr><tr style=\"display:none;\"><td><br></td></tr><tr style=\"display:none;\"><td>Numer urządzenia Tally: </td><td><input type=\"number\"size=\"5\"min=\"1\"max=\"41\"name=\"tNo\"value=\"";
     settings.tallyNo = 1;
     html += (settings.tallyNo + 1);
@@ -990,17 +794,7 @@ void handleRoot()
     html += "\"required/>. <input class=\"tIP\"type=\"text\"size=\"3\"maxlength=\"3\"name=\"gate4\"pattern=\"\\d{0,3}\"value=\"";
     html += settings.tallyGateway[3];
     html += "\"required/></td></tr>";
-#ifndef TALLY_TEST_SERVER
-    html += "<tr><td><br></td></tr><tr><td>ATEM switcher IP: </td><td><input class=\"IP\"type=\"text\"size=\"3\"maxlength=\"3\"name=\"aIP1\"pattern=\"\\d{0,3}\"value=\"";
-    html += settings.switcherIP[0];
-    html += "\"required/>. <input class=\"IP\"type=\"text\"size=\"3\"maxlength=\"3\"name=\"aIP2\"pattern=\"\\d{0,3}\"value=\"";
-    html += settings.switcherIP[1];
-    html += "\"required/>. <input class=\"IP\"type=\"text\"size=\"3\"maxlength=\"3\"name=\"aIP3\"pattern=\"\\d{0,3}\"value=\"";
-    html += settings.switcherIP[2];
-    html += "\"required/>. <input class=\"IP\"type=\"text\"size=\"3\"maxlength=\"3\"name=\"aIP4\"pattern=\"\\d{0,3}\"value=\"";
-    html += settings.switcherIP[3];
-    html += "\"required/></tr>";
-#endif
+
     html += "<tr><td><br></td></tr><tr><td/><td style=\"float: right;\"><input type=\"submit\"value=\"Zapisz zmiany\"/></td></tr></form><tr bgcolor=\"#cccccc\"style=\"font-size: .8em;\"><td colspan=\"3\"><p>&nbsp;Stworzone przez <a href=\"https://github.com/Dodo765\" target=\"_blank\">Dominik Kawalec</a></p><p>&nbsp;Napisane w oparciu o bibliotekę <a href=\"https://github.com/kasperskaarhoj/SKAARHOJ-Open-Engineering/tree/master/ArduinoLibs\" target=\"_blank\">SKAARHOJ</a></p></td></tr></table></body></html>";
     server.send(200, "text/html", html);
 }
@@ -1010,7 +804,7 @@ void handleSave()
 {
     if (server.method() != HTTP_POST)
     {
-        server.send(405, "text/html", "<!DOCTYPE html><html><head><meta charset=\"ASCII\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>Tally Light setup</title></head><body style=\"font-family:Verdana;\"><table bgcolor=\"#777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;" + (String)DISPLAY_NAME + " setup</h1></td></tr></table><br>Request without posting settings not allowed</body></html>");
+        server.send(405, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body style=\"font-family:Verdana;\"><table bgcolor=\"#777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr></table><br>Żądanie bez zmiany ustawień nie jest możliwe</body></html>");
     }
     else
     {
@@ -1138,7 +932,7 @@ void handleSave()
             EEPROM.put(0, settings);
             EEPROM.commit();
 
-            server.send(200, "text/html", (String) "<!DOCTYPE html><html><head><meta charset=\"ASCII\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>Tally Light setup</title></head><body><table bgcolor=\"#777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"font-family:Verdana;color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;" + (String)DISPLAY_NAME + " setup</h1></td></tr></table><br>Settings saved successfully.</body></html>");
+            server.send(200, "text/html", (String) "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body><table bgcolor=\"#777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"font-family:Verdana;color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr></table><br>Ustawienia zapisane pomyślnie!</body></html>");
 
             // Delay to let data be saved, and the response to be sent properly to the client
             server.close(); // Close server to flush and ensure the response gets to the client
@@ -1166,18 +960,12 @@ void handleSave()
 // Send 404 to client in case of invalid webpage being requested.
 void handleNotFound()
 {
-    server.send(404, "text/html", "<!DOCTYPE html><html><head><meta charset=\"ASCII\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>" + (String)DISPLAY_NAME + " setup</title></head><body style=\"font-family:Verdana;\"><table bgcolor=\"#777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp Tally Light setup</h1></td></tr></table><br>404 - Page not found</body></html>");
+    server.send(404, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body style=\"font-family:Verdana;\"><table bgcolor=\"#777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp DataVideo Tally Serwer</h1></td></tr></table><br>404 - strona nie znaleziona</body></html>");
 }
 
 String getSSID()
 {
-#if ESP32
-    wifi_config_t conf;
-    esp_wifi_get_config(WIFI_IF_STA, &conf);
-    return String(reinterpret_cast<const char *>(conf.sta.ssid));
-#else
     return WiFi.SSID();
-#endif
 }
 
 // Commented out for users without batteries - Also timer is not done properly
