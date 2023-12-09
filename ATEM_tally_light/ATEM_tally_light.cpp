@@ -160,16 +160,26 @@ int prevFlag = 0;
 // Perform initial setup on power on
 void setup()
 {
-    // Init pins for LED
-    pinMode(PIN_RED1, OUTPUT);
-    pinMode(PIN_GREEN1, OUTPUT);
-    pinMode(PIN_BLUE1, OUTPUT);
 
-    pinMode(PIN_RED2, OUTPUT);
-    pinMode(PIN_GREEN2, OUTPUT);
-    pinMode(PIN_BLUE2, OUTPUT);
+    pinMode(D1, INPUT_PULLUP);
+    pinMode(D2, INPUT_PULLUP);
+    pinMode(D3, INPUT_PULLUP);
+    pinMode(D4, INPUT_PULLUP);
+    pinMode(D5, INPUT_PULLUP);
+    pinMode(D6, INPUT_PULLUP);
+    pinMode(D7, INPUT_PULLUP);
+    pinMode(D0, INPUT_PULLUP);
 
-    setBothLEDs(LED_BLUE);
+    // // Init pins for LED
+    // pinMode(PIN_RED1, OUTPUT);
+    // pinMode(PIN_GREEN1, OUTPUT);
+    // pinMode(PIN_BLUE1, OUTPUT);
+
+    // pinMode(PIN_RED2, OUTPUT);
+    // pinMode(PIN_GREEN2, OUTPUT);
+    // pinMode(PIN_BLUE2, OUTPUT);
+
+    // setBothLEDs(LED_BLUE);
     // Setup current-measuring pin - Commented out for users without batteries
     //  pinMode(A0, INPUT);
 
@@ -183,44 +193,44 @@ void setup()
     EEPROM.get(0, settings);
 
     // Initialize LED strip
-    if (0 < settings.neopixelsAmount && settings.neopixelsAmount <= 1000)
-    {
-        leds = new CRGB[settings.neopixelsAmount];
-        FastLED.addLeds<NEOPIXEL, TALLY_DATA_PIN>(leds, settings.neopixelsAmount);
+    // if (0 < settings.neopixelsAmount && settings.neopixelsAmount <= 1000)
+    // {
+    //     leds = new CRGB[settings.neopixelsAmount];
+    //     FastLED.addLeds<NEOPIXEL, TALLY_DATA_PIN>(leds, settings.neopixelsAmount);
 
-        if (settings.neopixelStatusLEDOption != NEOPIXEL_STATUS_NONE)
-        {
-            numStatusLEDs = 1;
-            numTallyLEDs = settings.neopixelsAmount - numStatusLEDs;
-            if (settings.neopixelStatusLEDOption == NEOPIXEL_STATUS_FIRST)
-            {
-                statusLED = leds;
-                tallyLEDs = leds + numStatusLEDs;
-            }
-            else
-            { // if last or or other value
-                statusLED = leds + numTallyLEDs;
-                tallyLEDs = leds;
-            }
-        }
-        else
-        {
-            numTallyLEDs = settings.neopixelsAmount;
-            numStatusLEDs = 0;
-            tallyLEDs = leds;
-        }
-    }
-    else
-    {
-        settings.neopixelsAmount = 0;
-        numTallyLEDs = 0;
-        numStatusLEDs = 0;
-    }
+    //     if (settings.neopixelStatusLEDOption != NEOPIXEL_STATUS_NONE)
+    //     {
+    //         numStatusLEDs = 1;
+    //         numTallyLEDs = settings.neopixelsAmount - numStatusLEDs;
+    //         if (settings.neopixelStatusLEDOption == NEOPIXEL_STATUS_FIRST)
+    //         {
+    //             statusLED = leds;
+    //             tallyLEDs = leds + numStatusLEDs;
+    //         }
+    //         else
+    //         { // if last or or other value
+    //             statusLED = leds + numTallyLEDs;
+    //             tallyLEDs = leds;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         numTallyLEDs = settings.neopixelsAmount;
+    //         numStatusLEDs = 0;
+    //         tallyLEDs = leds;
+    //     }
+    // }
+    // else
+    // {
+    //     settings.neopixelsAmount = 0;
+    //     numTallyLEDs = 0;
+    //     numStatusLEDs = 0;
+    // }
 
-    FastLED.setBrightness(settings.neopixelBrightness);
-    setSTRIP(LED_OFF);
-    setStatusLED(LED_BLUE);
-    FastLED.show();
+    // FastLED.setBrightness(settings.neopixelBrightness);
+    // setSTRIP(LED_OFF);
+    // setStatusLED(LED_BLUE);
+    // FastLED.show();
 
     Serial.println(settings.tallyName);
 
@@ -304,8 +314,8 @@ void loop()
             Serial.println("Unable to connect. Serving \"Tally Light setup\" WiFi for configuration, while still trying to connect...");
             WiFi.softAP((String)DISPLAY_NAME + " setup");
             WiFi.mode(WIFI_AP_STA); // Enable softAP to access web interface in case of no WiFi
-            setBothLEDs(LED_WHITE);
-            setStatusLED(LED_WHITE);
+            // setBothLEDs(LED_WHITE);
+            // setStatusLED(LED_WHITE);
         }
         break;
 
@@ -313,7 +323,7 @@ void loop()
 
         if (bytesAvailable)
         {
-          switch (readByte)
+            switch (readByte)
             {
             case '1':
                 if (liveFlag != 0)
@@ -351,35 +361,78 @@ void loop()
                 break;
             }
         }
+        if (digitalRead(D0) == LOW)
+        { // 1 - live
+            Serial.println("1 - live");
+            liveFlag = 0;
+        }
+        if (digitalRead(D1) == LOW)
+        { // 2 - live
+            Serial.println("2 - live");
+            liveFlag = 1;
+        }
+        if (digitalRead(D2) == LOW)
+        { // 3 - live
+            Serial.println("3 - live");
+            liveFlag = 2;
+        }
+        if (digitalRead(D3) == LOW)
+        { // 4 - live
+            Serial.println("4 - live");
+            liveFlag = 3;
+        }
+        if (digitalRead(D4) == LOW)
+        { // 1 - prev
+            Serial.println("1 - prev");
+            prevFlag = 0;
+        }
+        if (digitalRead(D5) == LOW)
+        { // 2 - prev
+            Serial.println("2 - prev");
+            prevFlag = 1;
+        }
+        if (digitalRead(D6) == LOW)
+        { // 3 - prev
+            Serial.println("3 - prev");
+            prevFlag = 2;
+        }
+        if (digitalRead(D7) == LOW)
+        { // 4 - prev
+            Serial.println("4 - prev");
+            prevFlag = 3;
+        }
 
-        for (int i = 0; i < 41; i++){
+        for (int i = 0; i < 41; i++)
+        {
             tallyServer.setTallyFlag(i, 0);
         }
 
-        if (liveFlag == prevFlag){
+        if (liveFlag == prevFlag)
+        {
             tallyServer.setTallyFlag(liveFlag, 3);
         }
-        else{
+        else
+        {
             tallyServer.setTallyFlag(liveFlag, 1);
             tallyServer.setTallyFlag(prevFlag, 2);
         }
-        
-        Serial.print("Live: ");
-        Serial.print(liveFlag + 1);
-        Serial.print(" Prev: ");
-        Serial.println(prevFlag + 1);
+
+        // Serial.print("Live: ");
+        // Serial.print(liveFlag + 1);
+        // Serial.print(" Prev: ");
+        // Serial.println(prevFlag + 1);
         delay(10);
 
         // Handle Tally Server
         tallyServer.runLoop();
 
         // Set LED and Neopixel colors accordingly
-        int color = getLedColor(settings.tallyModeLED1, settings.tallyNo);
-        setLED1(color);
-        setSTRIP(color);
+        // int color = getLedColor(settings.tallyModeLED1, settings.tallyNo);
+        // setLED1(color);
+        // setSTRIP(color);
 
-        color = getLedColor(settings.tallyModeLED2, settings.tallyNo);
-        setLED2(color);
+        // color = getLedColor(settings.tallyModeLED2, settings.tallyNo);
+        // setLED2(color);
 
         // Commented out for userst without batteries - Also timer is not done properly
         //  batteryLoop();
@@ -398,14 +451,14 @@ void loop()
     }
 
     // Show strip only on updates
-    if (neopixelsUpdated)
-    {
-        FastLED.show();
-#ifdef DEBUG_LED_STRIP
-        Serial.println("Updated LEDs");
-#endif
-        neopixelsUpdated = false;
-    }
+    //     if (neopixelsUpdated)
+    //     {
+    //         FastLED.show();
+    // #ifdef DEBUG_LED_STRIP
+    //         Serial.println("Updated LEDs");
+    // #endif
+    //         neopixelsUpdated = false;
+    //     }
 
     // Handle web interface
     server.handleClient();
@@ -419,20 +472,20 @@ void changeState(uint8_t stateToChangeTo)
     {
     case STATE_CONNECTING_TO_WIFI:
         state = STATE_CONNECTING_TO_WIFI;
-        setBothLEDs(LED_BLUE);
-        setStatusLED(LED_BLUE);
-        setSTRIP(LED_OFF);
+        // setBothLEDs(LED_BLUE);
+        // setStatusLED(LED_BLUE);
+        // setSTRIP(LED_OFF);
         break;
     case STATE_CONNECTING_TO_SWITCHER:
         state = STATE_CONNECTING_TO_SWITCHER;
-        setBothLEDs(LED_PINK);
-        setStatusLED(LED_PINK);
-        setSTRIP(LED_OFF);
+        // setBothLEDs(LED_PINK);
+        // setStatusLED(LED_PINK);
+        // setSTRIP(LED_OFF);
         break;
     case STATE_RUNNING:
         state = STATE_RUNNING;
-        setBothLEDs(LED_GREEN);
-        setStatusLED(LED_ORANGE);
+        // setBothLEDs(LED_GREEN);
+        // setStatusLED(LED_ORANGE);
         break;
     }
 }
