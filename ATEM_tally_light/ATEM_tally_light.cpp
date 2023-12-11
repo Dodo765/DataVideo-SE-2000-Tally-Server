@@ -161,6 +161,7 @@ int prevFlag = 0;
 void setup()
 {
 
+    pinMode(D0, INPUT_PULLUP);
     pinMode(D1, INPUT_PULLUP);
     pinMode(D2, INPUT_PULLUP);
     pinMode(D3, INPUT_PULLUP);
@@ -168,7 +169,6 @@ void setup()
     pinMode(D5, INPUT_PULLUP);
     pinMode(D6, INPUT_PULLUP);
     pinMode(D7, INPUT_PULLUP);
-    pinMode(D0, INPUT_PULLUP);
 
     // // Init pins for LED
     // pinMode(PIN_RED1, OUTPUT);
@@ -321,107 +321,177 @@ void loop()
 
     case STATE_RUNNING:
 
-        if (bytesAvailable)
+        if ((bytesAvailable && readByte == 'r'))
         {
-            switch (readByte)
+            tallyFlag++;
+            tallyFlag %= 4;
+
+            switch (tallyFlag)
             {
-            case '1':
-                if (liveFlag != 0)
-                    liveFlag = 0;
+            case TALLY_FLAG_OFF:
+                Serial.println("Off");
                 break;
-            case '2':
-                if (liveFlag != 1)
-                    liveFlag = 1;
+            case TALLY_FLAG_PROGRAM:
+                Serial.println("Program");
                 break;
-            case '3':
-                if (liveFlag != 2)
-                    liveFlag = 2;
+            case TALLY_FLAG_PREVIEW:
+                Serial.println("Preview");
                 break;
-            case '4':
-                if (liveFlag != 3)
-                    liveFlag = 3;
-                break;
-            case '6':
-                if (prevFlag != 0)
-                    prevFlag = 0;
-                break;
-            case '7':
-                if (prevFlag != 1)
-                    prevFlag = 1;
-                break;
-            case '8':
-                if (prevFlag != 2)
-                    prevFlag = 2;
-                break;
-            case '9':
-                if (prevFlag != 3)
-                    prevFlag = 3;
+            case TALLY_FLAG_PROGRAM | TALLY_FLAG_PREVIEW:
+                Serial.println("Program and preview");
                 break;
             default:
+                Serial.println("Invalid tally state...");
                 break;
             }
+
+            for (int i = 0; i < 41; i++)
+            {
+                tallyServer.setTallyFlag(i, tallyFlag);
+            }
         }
-        if (digitalRead(D0) == LOW)
-        { // 1 - live
-            Serial.println("1 - live");
+        if ((bytesAvailable && readByte == '1') || digitalRead(D0) == LOW)
+        {
             liveFlag = 0;
+            for (int i = 0; i < 41; i++)
+            {
+                tallyServer.setTallyFlag(i, 0);
+            }
+            if (liveFlag == prevFlag)
+            {
+                tallyServer.setTallyFlag(liveFlag, 3);
+            }
+            else
+            {
+                tallyServer.setTallyFlag(liveFlag, 1);
+                tallyServer.setTallyFlag(prevFlag, 2);
+            }
         }
-        if (digitalRead(D1) == LOW)
-        { // 2 - live
-            Serial.println("2 - live");
+        if ((bytesAvailable && readByte == '2') || digitalRead(D1) == LOW)
+        {
             liveFlag = 1;
+            for (int i = 0; i < 41; i++)
+            {
+                tallyServer.setTallyFlag(i, 0);
+            }
+            if (liveFlag == prevFlag)
+            {
+                tallyServer.setTallyFlag(liveFlag, 3);
+            }
+            else
+            {
+                tallyServer.setTallyFlag(liveFlag, 1);
+                tallyServer.setTallyFlag(prevFlag, 2);
+            }
         }
-        if (digitalRead(D2) == LOW)
-        { // 3 - live
-            Serial.println("3 - live");
+        if ((bytesAvailable && readByte == '3') || digitalRead(D2) == LOW)
+        {
             liveFlag = 2;
+            for (int i = 0; i < 41; i++)
+            {
+                tallyServer.setTallyFlag(i, 0);
+            }
+            if (liveFlag == prevFlag)
+            {
+                tallyServer.setTallyFlag(liveFlag, 3);
+            }
+            else
+            {
+                tallyServer.setTallyFlag(liveFlag, 1);
+                tallyServer.setTallyFlag(prevFlag, 2);
+            }
         }
-        if (digitalRead(D3) == LOW)
-        { // 4 - live
-            Serial.println("4 - live");
+        if ((bytesAvailable && readByte == '4') || digitalRead(D3) == LOW)
+        {
             liveFlag = 3;
+            for (int i = 0; i < 41; i++)
+            {
+                tallyServer.setTallyFlag(i, 0);
+            }
+            if (liveFlag == prevFlag)
+            {
+                tallyServer.setTallyFlag(liveFlag, 3);
+            }
+            else
+            {
+                tallyServer.setTallyFlag(liveFlag, 1);
+                tallyServer.setTallyFlag(prevFlag, 2);
+            }
         }
-        if (digitalRead(D4) == LOW)
-        { // 1 - prev
-            Serial.println("1 - prev");
+        if ((bytesAvailable && readByte == '6') || digitalRead(D4) == LOW)
+        {
             prevFlag = 0;
+            for (int i = 0; i < 41; i++)
+            {
+                tallyServer.setTallyFlag(i, 0);
+            }
+            if (liveFlag == prevFlag)
+            {
+                tallyServer.setTallyFlag(liveFlag, 3);
+            }
+            else
+            {
+                tallyServer.setTallyFlag(liveFlag, 1);
+                tallyServer.setTallyFlag(prevFlag, 2);
+            }
         }
-        if (digitalRead(D5) == LOW)
-        { // 2 - prev
-            Serial.println("2 - prev");
+        if ((bytesAvailable && readByte == '7') || digitalRead(D5) == LOW)
+        {
             prevFlag = 1;
+            for (int i = 0; i < 41; i++)
+            {
+                tallyServer.setTallyFlag(i, 0);
+            }
+            if (liveFlag == prevFlag)
+            {
+                tallyServer.setTallyFlag(liveFlag, 3);
+            }
+            else
+            {
+                tallyServer.setTallyFlag(liveFlag, 1);
+                tallyServer.setTallyFlag(prevFlag, 2);
+            }
         }
-        if (digitalRead(D6) == LOW)
-        { // 3 - prev
-            Serial.println("3 - prev");
+        if ((bytesAvailable && readByte == '8') || digitalRead(D6) == LOW)
+        {
             prevFlag = 2;
+            for (int i = 0; i < 41; i++)
+            {
+                tallyServer.setTallyFlag(i, 0);
+            }
+            if (liveFlag == prevFlag)
+            {
+                tallyServer.setTallyFlag(liveFlag, 3);
+            }
+            else
+            {
+                tallyServer.setTallyFlag(liveFlag, 1);
+                tallyServer.setTallyFlag(prevFlag, 2);
+            }
         }
-        if (digitalRead(D7) == LOW)
-        { // 4 - prev
-            Serial.println("4 - prev");
+        if ((bytesAvailable && readByte == '9') || digitalRead(D7) == LOW)
+        {
             prevFlag = 3;
-        }
-
-        for (int i = 0; i < 41; i++)
-        {
-            tallyServer.setTallyFlag(i, 0);
-        }
-
-        if (liveFlag == prevFlag)
-        {
-            tallyServer.setTallyFlag(liveFlag, 3);
-        }
-        else
-        {
-            tallyServer.setTallyFlag(liveFlag, 1);
-            tallyServer.setTallyFlag(prevFlag, 2);
+            for (int i = 0; i < 41; i++)
+            {
+                tallyServer.setTallyFlag(i, 0);
+            }
+            if (liveFlag == prevFlag)
+            {
+                tallyServer.setTallyFlag(liveFlag, 3);
+            }
+            else
+            {
+                tallyServer.setTallyFlag(liveFlag, 1);
+                tallyServer.setTallyFlag(prevFlag, 2);
+            }
         }
 
         // Serial.print("Live: ");
         // Serial.print(liveFlag + 1);
         // Serial.print(" Prev: ");
         // Serial.println(prevFlag + 1);
-        delay(10);
+        delay(1);
 
         // Handle Tally Server
         tallyServer.runLoop();
