@@ -29,36 +29,36 @@
 
 // ESP8266
 // Define LED1 color pins
-#ifndef PIN_RED1
-#define PIN_RED1 16 // D0
-#endif
-#ifndef PIN_GREEN1
-#define PIN_GREEN1 4 // D2
-#endif
-#ifndef PIN_BLUE1
-#define PIN_BLUE1 5 // D1
-#endif
+// #ifndef PIN_RED1
+// #define PIN_RED1 16 // D0
+// #endif
+// #ifndef PIN_GREEN1
+// #define PIN_GREEN1 4 // D2
+// #endif
+// #ifndef PIN_BLUE1
+// #define PIN_BLUE1 5 // D1
+// #endif
 
 // Define LED2 color pins
-#ifndef PIN_RED2
-#define PIN_RED2 2 // D4
-#endif
-#ifndef PIN_GREEN2
-#define PIN_GREEN2 14 // D5
-#endif
-#ifndef PIN_BLUE2
-#define PIN_BLUE2 12 // D6
-#endif
+// #ifndef PIN_RED2
+// #define PIN_RED2 2 // D4
+// #endif
+// #ifndef PIN_GREEN2
+// #define PIN_GREEN2 14 // D5
+// #endif
+// #ifndef PIN_BLUE2
+// #define PIN_BLUE2 12 // D6
+// #endif
 
 // Define LED colors
-#define LED_OFF 0
-#define LED_RED 1
-#define LED_GREEN 2
-#define LED_BLUE 3
-#define LED_YELLOW 4
-#define LED_PINK 5
-#define LED_WHITE 6
-#define LED_ORANGE 7
+// #define LED_OFF 0
+// #define LED_RED 1
+// #define LED_GREEN 2
+// #define LED_BLUE 3
+// #define LED_YELLOW 4
+// #define LED_PINK 5
+// #define LED_WHITE 6
+// #define LED_ORANGE 7
 
 // Map "old" LED colors to CRGB colors
 CRGB color_led[8] = {CRGB::Black, CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Yellow, CRGB::Fuchsia, CRGB::White, CRGB::Orange};
@@ -561,78 +561,78 @@ void changeState(uint8_t stateToChangeTo)
 }
 
 // Set the color of both LEDs
-void setBothLEDs(uint8_t color)
-{
-    setLED(color, PIN_RED1, PIN_GREEN1, PIN_BLUE1);
-    setLED(color, PIN_RED2, PIN_GREEN2, PIN_BLUE2);
-}
+// void setBothLEDs(uint8_t color)
+// {
+//     setLED(color, PIN_RED1, PIN_GREEN1, PIN_BLUE1);
+//     setLED(color, PIN_RED2, PIN_GREEN2, PIN_BLUE2);
+// }
 
 // Set the color of the 1st LED
-void setLED1(uint8_t color)
-{
-    setLED(color, PIN_RED1, PIN_GREEN1, PIN_BLUE1);
-}
+// void setLED1(uint8_t color)
+// {
+//     setLED(color, PIN_RED1, PIN_GREEN1, PIN_BLUE1);
+// }
 
 // Set the color of the 2nd LED
-void setLED2(uint8_t color)
-{
-    setLED(color, PIN_RED2, PIN_GREEN2, PIN_BLUE2);
-}
+// void setLED2(uint8_t color)
+// {
+//     setLED(color, PIN_RED2, PIN_GREEN2, PIN_BLUE2);
+// }
 
 // Set the color of a LED using the given pins
-void setLED(uint8_t color, int pinRed, int pinGreen, int pinBlue)
-{
-    uint8_t ledBrightness = settings.ledBrightness;
-    void (*writeFunc)(uint8_t, uint8_t);
-    if (ledBrightness >= 0xff)
-    {
-        writeFunc = &digitalWrite;
-        ledBrightness = 1;
-    }
-    else
-    {
-        writeFunc = &analogWriteWrapper;
-    }
+// void setLED(uint8_t color, int pinRed, int pinGreen, int pinBlue)
+// {
+//     uint8_t ledBrightness = settings.ledBrightness;
+//     void (*writeFunc)(uint8_t, uint8_t);
+//     if (ledBrightness >= 0xff)
+//     {
+//         writeFunc = &digitalWrite;
+//         ledBrightness = 1;
+//     }
+//     else
+//     {
+//         writeFunc = &analogWriteWrapper;
+//     }
 
-    switch (color)
-    {
-    case LED_OFF:
-        digitalWrite(pinRed, 0);
-        digitalWrite(pinGreen, 0);
-        digitalWrite(pinBlue, 0);
-        break;
-    case LED_RED:
-        writeFunc(pinRed, ledBrightness);
-        digitalWrite(pinGreen, 0);
-        digitalWrite(pinBlue, 0);
-        break;
-    case LED_GREEN:
-        digitalWrite(pinRed, 0);
-        writeFunc(pinGreen, ledBrightness);
-        digitalWrite(pinBlue, 0);
-        break;
-    case LED_BLUE:
-        digitalWrite(pinRed, 0);
-        digitalWrite(pinGreen, 0);
-        writeFunc(pinBlue, ledBrightness);
-        break;
-    case LED_YELLOW:
-        writeFunc(pinRed, ledBrightness);
-        writeFunc(pinGreen, ledBrightness);
-        digitalWrite(pinBlue, 0);
-        break;
-    case LED_PINK:
-        writeFunc(pinRed, ledBrightness);
-        digitalWrite(pinGreen, 0);
-        writeFunc(pinBlue, ledBrightness);
-        break;
-    case LED_WHITE:
-        writeFunc(pinRed, ledBrightness);
-        writeFunc(pinGreen, ledBrightness);
-        writeFunc(pinBlue, ledBrightness);
-        break;
-    }
-}
+//     switch (color)
+//     {
+//     case LED_OFF:
+//         digitalWrite(pinRed, 0);
+//         digitalWrite(pinGreen, 0);
+//         digitalWrite(pinBlue, 0);
+//         break;
+//     case LED_RED:
+//         writeFunc(pinRed, ledBrightness);
+//         digitalWrite(pinGreen, 0);
+//         digitalWrite(pinBlue, 0);
+//         break;
+//     case LED_GREEN:
+//         digitalWrite(pinRed, 0);
+//         writeFunc(pinGreen, ledBrightness);
+//         digitalWrite(pinBlue, 0);
+//         break;
+//     case LED_BLUE:
+//         digitalWrite(pinRed, 0);
+//         digitalWrite(pinGreen, 0);
+//         writeFunc(pinBlue, ledBrightness);
+//         break;
+//     case LED_YELLOW:
+//         writeFunc(pinRed, ledBrightness);
+//         writeFunc(pinGreen, ledBrightness);
+//         digitalWrite(pinBlue, 0);
+//         break;
+//     case LED_PINK:
+//         writeFunc(pinRed, ledBrightness);
+//         digitalWrite(pinGreen, 0);
+//         writeFunc(pinBlue, ledBrightness);
+//         break;
+//     case LED_WHITE:
+//         writeFunc(pinRed, ledBrightness);
+//         writeFunc(pinGreen, ledBrightness);
+//         writeFunc(pinBlue, ledBrightness);
+//         break;
+//     }
+// }
 
 void analogWriteWrapper(uint8_t pin, uint8_t value)
 {
@@ -640,46 +640,46 @@ void analogWriteWrapper(uint8_t pin, uint8_t value)
 }
 
 // Set the color of the LED strip, except for the status LED
-void setSTRIP(uint8_t color)
-{
-    if (numTallyLEDs > 0 && tallyLEDs[0] != color_led[color])
-    {
-        for (int i = 0; i < numTallyLEDs; i++)
-        {
-            tallyLEDs[i] = color_led[color];
-        }
-        neopixelsUpdated = true;
-#ifdef DEBUG_LED_STRIP
-        Serial.println("Tally:  ");
-        printLeds();
-#endif
-    }
-}
+// void setSTRIP(uint8_t color)
+// {
+//     if (numTallyLEDs > 0 && tallyLEDs[0] != color_led[color])
+//     {
+//         for (int i = 0; i < numTallyLEDs; i++)
+//         {
+//             tallyLEDs[i] = color_led[color];
+//         }
+//         neopixelsUpdated = true;
+// #ifdef DEBUG_LED_STRIP
+//         Serial.println("Tally:  ");
+//         printLeds();
+// #endif
+//     }
+// }
 
 // Set the single status LED (last LED)
-void setStatusLED(uint8_t color)
-{
-    if (numStatusLEDs > 0 && statusLED[0] != color_led[color])
-    {
-        for (int i = 0; i < numStatusLEDs; i++)
-        {
-            statusLED[i] = color_led[color];
-            if (color == LED_ORANGE)
-            {
-                statusLED[i].fadeToBlackBy(230);
-            }
-            else
-            {
-                statusLED[i].fadeToBlackBy(0);
-            }
-        }
-        neopixelsUpdated = true;
-#ifdef DEBUG_LED_STRIP
-        Serial.println("Status: ");
-        printLeds();
-#endif
-    }
-}
+// void setStatusLED(uint8_t color)
+// {
+//     if (numStatusLEDs > 0 && statusLED[0] != color_led[color])
+//     {
+//         for (int i = 0; i < numStatusLEDs; i++)
+//         {
+//             statusLED[i] = color_led[color];
+//             if (color == LED_ORANGE)
+//             {
+//                 statusLED[i].fadeToBlackBy(230);
+//             }
+//             else
+//             {
+//                 statusLED[i].fadeToBlackBy(0);
+//             }
+//         }
+//         neopixelsUpdated = true;
+// #ifdef DEBUG_LED_STRIP
+//         Serial.println("Status: ");
+//         printLeds();
+// #endif
+//     }
+// }
 
 #ifdef DEBUG_LED_STRIP
 void printLeds()
@@ -715,31 +715,31 @@ int getTallyState(uint16_t tallyNo)
     }
 }
 
-int getLedColor(int tallyMode, int tallyNo)
-{
-    if (tallyMode == MODE_ON_AIR)
-    {
+// int getLedColor(int tallyMode, int tallyNo)
+// {
+//     if (tallyMode == MODE_ON_AIR)
+//     {
 
-        return LED_OFF;
-    }
+//         return LED_OFF;
+//     }
 
-    int tallyState = getTallyState(tallyNo);
+//     int tallyState = getTallyState(tallyNo);
 
-    if (tallyState == TALLY_FLAG_PROGRAM)
-    { // if tally live
-        return LED_RED;
-    }
-    else if ((tallyState == TALLY_FLAG_PREVIEW      // if tally preview
-              || tallyMode == MODE_PREVIEW_STAY_ON) // or preview stay on
-             && tallyMode != MODE_PROGRAM_ONLY)
-    { // and not program only
-        return LED_GREEN;
-    }
-    else
-    { // if tally is neither
-        return LED_OFF;
-    }
-}
+//     if (tallyState == TALLY_FLAG_PROGRAM)
+//     { // if tally live
+//         return LED_RED;
+//     }
+//     else if ((tallyState == TALLY_FLAG_PREVIEW      // if tally preview
+//               || tallyMode == MODE_PREVIEW_STAY_ON) // or preview stay on
+//              && tallyMode != MODE_PROGRAM_ONLY)
+//     { // and not program only
+//         return LED_GREEN;
+//     }
+//     else
+//     { // if tally is neither
+//         return LED_OFF;
+//     }
+// }
 
 // Serve setup web page to client, by sending HTML with the correct variables
 void handleRoot()
