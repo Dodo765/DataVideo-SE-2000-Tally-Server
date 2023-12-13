@@ -366,6 +366,10 @@ void loop()
                 tallyServer.setTallyFlag(liveFlag, 1);
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
+            Serial.print("Live: ");
+            Serial.print(liveFlag);
+            Serial.print(" Prev: ");
+            Serial.println(prevFlag);
         }
         if ((bytesAvailable && readByte == '2') || digitalRead(D1) == LOW)
         {
@@ -383,6 +387,10 @@ void loop()
                 tallyServer.setTallyFlag(liveFlag, 1);
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
+            Serial.print("Live: ");
+            Serial.print(liveFlag);
+            Serial.print(" Prev: ");
+            Serial.println(prevFlag);
         }
         if ((bytesAvailable && readByte == '3') || digitalRead(D2) == LOW)
         {
@@ -400,6 +408,10 @@ void loop()
                 tallyServer.setTallyFlag(liveFlag, 1);
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
+            Serial.print("Live: ");
+            Serial.print(liveFlag);
+            Serial.print(" Prev: ");
+            Serial.println(prevFlag);
         }
         if ((bytesAvailable && readByte == '4') || digitalRead(D3) == LOW)
         {
@@ -417,6 +429,10 @@ void loop()
                 tallyServer.setTallyFlag(liveFlag, 1);
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
+            Serial.print("Live: ");
+            Serial.print(liveFlag);
+            Serial.print(" Prev: ");
+            Serial.println(prevFlag);
         }
         if ((bytesAvailable && readByte == '6') || digitalRead(D4) == LOW)
         {
@@ -434,6 +450,10 @@ void loop()
                 tallyServer.setTallyFlag(liveFlag, 1);
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
+            Serial.print("Live: ");
+            Serial.print(liveFlag);
+            Serial.print(" Prev: ");
+            Serial.println(prevFlag);
         }
         if ((bytesAvailable && readByte == '7') || digitalRead(D5) == LOW)
         {
@@ -451,6 +471,10 @@ void loop()
                 tallyServer.setTallyFlag(liveFlag, 1);
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
+            Serial.print("Live: ");
+            Serial.print(liveFlag);
+            Serial.print(" Prev: ");
+            Serial.println(prevFlag);
         }
         if ((bytesAvailable && readByte == '8') || digitalRead(D6) == LOW)
         {
@@ -468,6 +492,10 @@ void loop()
                 tallyServer.setTallyFlag(liveFlag, 1);
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
+            Serial.print("Live: ");
+            Serial.print(liveFlag);
+            Serial.print(" Prev: ");
+            Serial.println(prevFlag);
         }
         if ((bytesAvailable && readByte == '9') || digitalRead(D7) == LOW)
         {
@@ -485,13 +513,17 @@ void loop()
                 tallyServer.setTallyFlag(liveFlag, 1);
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
+            Serial.print("Live: ");
+            Serial.print(liveFlag);
+            Serial.print(" Prev: ");
+            Serial.println(prevFlag);
         }
 
         // Serial.print("Live: ");
         // Serial.print(liveFlag + 1);
         // Serial.print(" Prev: ");
         // Serial.println(prevFlag + 1);
-        delay(1);
+        delay(10);
 
         // Handle Tally Server
         tallyServer.runLoop();
