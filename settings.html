@@ -10,8 +10,7 @@
 				align-items: center;
 				justify-content: center;
 				width: 100vw;
-				height: 100vh;
-				overflow: hidden;
+				overflow-x: hidden;
 				font-family: "Arial", sans-serif;
 				background-color: #242424;
 				color: #fff;
@@ -65,6 +64,18 @@
 			}
 			* {
 				line-height: 1.2;
+			}
+			@media screen and (max-width: 730px) {
+				body {
+					width: 100vw;
+					margin: 0;
+					padding: 10px;
+				}
+				table {
+					width: 100%;
+					padding: 0 10px;
+					margin: 0;
+				}
 			}
 		</style>
 	</head>
@@ -349,11 +360,17 @@
 					</td>
 				</tr>
 			</form>
-			<td><br /></td>
 			<tr bgcolor="#cccccc" style="font-size: 0.8em">
 				<td colspan="3">
-					<p>&nbsp;&copy; 2021 <a href="https://aronhetlam.github.io/">Aron N. Het Lam</a></p>
-					<p>&nbsp;Based on ATEM libraries for Arduino by <a href="https://www.skaarhoj.com/">SKAARHOJ</a></p>
+					<p>&nbsp;Stworzone przez <a href="https://github.com/Dodo765" target="_blank">Dominik Kawalec</a></p>
+					<p>
+						&nbsp;Napisane w oparciu o bibliotekę
+						<a
+							href="https://github.com/kasperskaarhoj/SKAARHOJ-Open-Engineering/tree/master/ArduinoLibs"
+							target="_blank"
+							>SKAARHOJ</a
+						>
+					</p>
 				</td>
 			</tr>
 		</table>
