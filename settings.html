@@ -13,7 +13,7 @@
 				height: 100vh;
 				overflow: hidden;
 				font-family: "Arial", sans-serif;
-				background-color: #333;
+				background-color: #242424;
 				color: #fff;
 			}
 			table {
@@ -32,7 +32,7 @@
 			}
 			tr[bgcolor="#777777"] {
 				background-color: transparent;
-				color: #4caf50 !important;
+				color: #22e628 !important;
 			}
 			tr[bgcolor="#cccccc"] {
 				background-color: transparent;
@@ -40,19 +40,28 @@
 			tr[bgcolor="#cccccc"] p {
 				font-size: 16px;
 			}
+			input[type="checkbox"] {
+				width: 17.5px;
+				aspect-ratio: 1;
+				cursor: pointer;
+			}
+			td {
+				cursor: default;
+				user-select: none;
+			}
 			input {
 				border-radius: 6px;
+				cursor: text;
 			}
 			select {
 				border-radius: 6px;
+				cursor: pointer;
 			}
 			td[style="float: right"] input {
-				background-color: #4caf50 !important;
+				background-color: #22e628 !important;
 				color: white;
-			}
-			td[style="float: right"] input:hover {
-				background-color: #327435 !important;
-				color: white;
+				padding: 7px 17px;
+				cursor: pointer;
 			}
 			* {
 				line-height: 1.2;
