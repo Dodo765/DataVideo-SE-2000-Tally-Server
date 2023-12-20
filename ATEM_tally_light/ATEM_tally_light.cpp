@@ -27,39 +27,6 @@
 #include <TallyServer.h>
 #include <FastLED.h>
 
-// ESP8266
-// Define LED1 color pins
-// #ifndef PIN_RED1
-// #define PIN_RED1 16 // D0
-// #endif
-// #ifndef PIN_GREEN1
-// #define PIN_GREEN1 4 // D2
-// #endif
-// #ifndef PIN_BLUE1
-// #define PIN_BLUE1 5 // D1
-// #endif
-
-// Define LED2 color pins
-// #ifndef PIN_RED2
-// #define PIN_RED2 2 // D4
-// #endif
-// #ifndef PIN_GREEN2
-// #define PIN_GREEN2 14 // D5
-// #endif
-// #ifndef PIN_BLUE2
-// #define PIN_BLUE2 12 // D6
-// #endif
-
-// Define LED colors
-// #define LED_OFF 0
-// #define LED_RED 1
-// #define LED_GREEN 2
-// #define LED_BLUE 3
-// #define LED_YELLOW 4
-// #define LED_PINK 5
-// #define LED_WHITE 6
-// #define LED_ORANGE 7
-
 // Map "old" LED colors to CRGB colors
 CRGB color_led[8] = {CRGB::Black, CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Yellow, CRGB::Fuchsia, CRGB::White, CRGB::Orange};
 
@@ -138,13 +105,6 @@ bool firstRun = true;
 int bytesAvailable = false;
 uint8_t readByte;
 
-// Commented out for users without batteries
-//  long secLoop = 0;
-//  int lowLedCount = 0;
-//  bool lowLedOn = false;
-//  double uBatt = 0;
-//  char buffer[3];
-
 void onImprovWiFiErrorCb(ImprovTypes::Error err)
 {
 }
@@ -156,6 +116,28 @@ void onImprovWiFiConnectedCb(const char *ssid, const char *password)
 // tally preview
 int liveFlag = 0;
 int prevFlag = 0;
+
+// set tally state to live and prev
+void tallySetState()
+{
+    for (int i = 0; i < 41; i++)
+    {
+        tallyServer.setTallyFlag(i, 0);
+    }
+    if (liveFlag == prevFlag)
+    {
+        tallyServer.setTallyFlag(liveFlag, 3);
+    }
+    else
+    {
+        tallyServer.setTallyFlag(liveFlag, 1);
+        tallyServer.setTallyFlag(prevFlag, 2);
+    }
+    Serial.print("Live: ");
+    Serial.print(liveFlag + 1);
+    Serial.print(" Prev: ");
+    Serial.println(prevFlag + 1);
+}
 
 // Perform initial setup on power on
 void setup()
@@ -170,19 +152,6 @@ void setup()
     pinMode(D6, INPUT_PULLUP);
     pinMode(D7, INPUT_PULLUP);
 
-    // // Init pins for LED
-    // pinMode(PIN_RED1, OUTPUT);
-    // pinMode(PIN_GREEN1, OUTPUT);
-    // pinMode(PIN_BLUE1, OUTPUT);
-
-    // pinMode(PIN_RED2, OUTPUT);
-    // pinMode(PIN_GREEN2, OUTPUT);
-    // pinMode(PIN_BLUE2, OUTPUT);
-
-    // setBothLEDs(LED_BLUE);
-    // Setup current-measuring pin - Commented out for users without batteries
-    //  pinMode(A0, INPUT);
-
     // Start Serial
     Serial.begin(115200);
     Serial.println("########################");
@@ -191,46 +160,6 @@ void setup()
     // Read settings from EEPROM. WIFI settings are stored separately by the ESP
     EEPROM.begin(sizeof(settings)); // Needed on ESP8266 module, as EEPROM lib works a bit differently than on a regular Arduino
     EEPROM.get(0, settings);
-
-    // Initialize LED strip
-    // if (0 < settings.neopixelsAmount && settings.neopixelsAmount <= 1000)
-    // {
-    //     leds = new CRGB[settings.neopixelsAmount];
-    //     FastLED.addLeds<NEOPIXEL, TALLY_DATA_PIN>(leds, settings.neopixelsAmount);
-
-    //     if (settings.neopixelStatusLEDOption != NEOPIXEL_STATUS_NONE)
-    //     {
-    //         numStatusLEDs = 1;
-    //         numTallyLEDs = settings.neopixelsAmount - numStatusLEDs;
-    //         if (settings.neopixelStatusLEDOption == NEOPIXEL_STATUS_FIRST)
-    //         {
-    //             statusLED = leds;
-    //             tallyLEDs = leds + numStatusLEDs;
-    //         }
-    //         else
-    //         { // if last or or other value
-    //             statusLED = leds + numTallyLEDs;
-    //             tallyLEDs = leds;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         numTallyLEDs = settings.neopixelsAmount;
-    //         numStatusLEDs = 0;
-    //         tallyLEDs = leds;
-    //     }
-    // }
-    // else
-    // {
-    //     settings.neopixelsAmount = 0;
-    //     numTallyLEDs = 0;
-    //     numStatusLEDs = 0;
-    // }
-
-    // FastLED.setBrightness(settings.neopixelBrightness);
-    // setSTRIP(LED_OFF);
-    // setStatusLED(LED_BLUE);
-    // FastLED.show();
 
     Serial.println(settings.tallyName);
 
@@ -353,191 +282,49 @@ void loop()
         if ((bytesAvailable && readByte == '1') || digitalRead(D0) == LOW)
         {
             liveFlag = 0;
-            for (int i = 0; i < 41; i++)
-            {
-                tallyServer.setTallyFlag(i, 0);
-            }
-            if (liveFlag == prevFlag)
-            {
-                tallyServer.setTallyFlag(liveFlag, 3);
-            }
-            else
-            {
-                tallyServer.setTallyFlag(liveFlag, 1);
-                tallyServer.setTallyFlag(prevFlag, 2);
-            }
-            Serial.print("Live: ");
-            Serial.print(liveFlag + 1);
-            Serial.print(" Prev: ");
-            Serial.println(prevFlag + 1);
+            tallySetState();
         }
         if ((bytesAvailable && readByte == '2') || digitalRead(D1) == LOW)
         {
             liveFlag = 1;
-            for (int i = 0; i < 41; i++)
-            {
-                tallyServer.setTallyFlag(i, 0);
-            }
-            if (liveFlag == prevFlag)
-            {
-                tallyServer.setTallyFlag(liveFlag, 3);
-            }
-            else
-            {
-                tallyServer.setTallyFlag(liveFlag, 1);
-                tallyServer.setTallyFlag(prevFlag, 2);
-            }
-            Serial.print("Live: ");
-            Serial.print(liveFlag + 1);
-            Serial.print(" Prev: ");
-            Serial.println(prevFlag + 1);
+            tallySetState();
         }
         if ((bytesAvailable && readByte == '3') || digitalRead(D2) == LOW)
         {
             liveFlag = 2;
-            for (int i = 0; i < 41; i++)
-            {
-                tallyServer.setTallyFlag(i, 0);
-            }
-            if (liveFlag == prevFlag)
-            {
-                tallyServer.setTallyFlag(liveFlag, 3);
-            }
-            else
-            {
-                tallyServer.setTallyFlag(liveFlag, 1);
-                tallyServer.setTallyFlag(prevFlag, 2);
-            }
-            Serial.print("Live: ");
-            Serial.print(liveFlag + 1);
-            Serial.print(" Prev: ");
-            Serial.println(prevFlag + 1);
+            tallySetState();
         }
         if ((bytesAvailable && readByte == '4') || digitalRead(D3) == LOW)
         {
             liveFlag = 3;
-            for (int i = 0; i < 41; i++)
-            {
-                tallyServer.setTallyFlag(i, 0);
-            }
-            if (liveFlag == prevFlag)
-            {
-                tallyServer.setTallyFlag(liveFlag, 3);
-            }
-            else
-            {
-                tallyServer.setTallyFlag(liveFlag, 1);
-                tallyServer.setTallyFlag(prevFlag, 2);
-            }
-            Serial.print("Live: ");
-            Serial.print(liveFlag + 1);
-            Serial.print(" Prev: ");
-            Serial.println(prevFlag + 1);
+            tallySetState();
         }
         if ((bytesAvailable && readByte == '6') || digitalRead(D4) == LOW)
         {
             prevFlag = 0;
-            for (int i = 0; i < 41; i++)
-            {
-                tallyServer.setTallyFlag(i, 0);
-            }
-            if (liveFlag == prevFlag)
-            {
-                tallyServer.setTallyFlag(liveFlag, 3);
-            }
-            else
-            {
-                tallyServer.setTallyFlag(liveFlag, 1);
-                tallyServer.setTallyFlag(prevFlag, 2);
-            }
-            Serial.print("Live: ");
-            Serial.print(liveFlag + 1);
-            Serial.print(" Prev: ");
-            Serial.println(prevFlag + 1);
+            tallySetState();
         }
         if ((bytesAvailable && readByte == '7') || digitalRead(D5) == LOW)
         {
             prevFlag = 1;
-            for (int i = 0; i < 41; i++)
-            {
-                tallyServer.setTallyFlag(i, 0);
-            }
-            if (liveFlag == prevFlag)
-            {
-                tallyServer.setTallyFlag(liveFlag, 3);
-            }
-            else
-            {
-                tallyServer.setTallyFlag(liveFlag, 1);
-                tallyServer.setTallyFlag(prevFlag, 2);
-            }
-            Serial.print("Live: ");
-            Serial.print(liveFlag + 1);
-            Serial.print(" Prev: ");
-            Serial.println(prevFlag + 1);
+            tallySetState();
         }
         if ((bytesAvailable && readByte == '8') || digitalRead(D6) == LOW)
         {
             prevFlag = 2;
-            for (int i = 0; i < 41; i++)
-            {
-                tallyServer.setTallyFlag(i, 0);
-            }
-            if (liveFlag == prevFlag)
-            {
-                tallyServer.setTallyFlag(liveFlag, 3);
-            }
-            else
-            {
-                tallyServer.setTallyFlag(liveFlag, 1);
-                tallyServer.setTallyFlag(prevFlag, 2);
-            }
-            Serial.print("Live: ");
-            Serial.print(liveFlag + 1);
-            Serial.print(" Prev: ");
-            Serial.println(prevFlag + 1);
+            tallySetState();
         }
         if ((bytesAvailable && readByte == '9') || digitalRead(D7) == LOW)
         {
             prevFlag = 3;
-            for (int i = 0; i < 41; i++)
-            {
-                tallyServer.setTallyFlag(i, 0);
-            }
-            if (liveFlag == prevFlag)
-            {
-                tallyServer.setTallyFlag(liveFlag, 3);
-            }
-            else
-            {
-                tallyServer.setTallyFlag(liveFlag, 1);
-                tallyServer.setTallyFlag(prevFlag, 2);
-            }
-            Serial.print("Live: ");
-            Serial.print(liveFlag + 1);
-            Serial.print(" Prev: ");
-            Serial.println(prevFlag + 1);
+            tallySetState();
         }
 
-        // Serial.print("Live: ");
-        // Serial.print(liveFlag + 1);
-        // Serial.print(" Prev: ");
-        // Serial.println(prevFlag + 1);
         delay(10);
 
         // Handle Tally Server
         tallyServer.runLoop();
 
-        // Set LED and Neopixel colors accordingly
-        // int color = getLedColor(settings.tallyModeLED1, settings.tallyNo);
-        // setLED1(color);
-        // setSTRIP(color);
-
-        // color = getLedColor(settings.tallyModeLED2, settings.tallyNo);
-        // setLED2(color);
-
-        // Commented out for userst without batteries - Also timer is not done properly
-        //  batteryLoop();
         break;
     }
 
@@ -552,15 +339,6 @@ void loop()
         tallyServer.resetTallyFlags();
     }
 
-    // Show strip only on updates
-    //     if (neopixelsUpdated)
-    //     {
-    //         FastLED.show();
-    // #ifdef DEBUG_LED_STRIP
-    //         Serial.println("Updated LEDs");
-    // #endif
-    //         neopixelsUpdated = false;
-    //     }
 
     // Handle web interface
     server.handleClient();
@@ -574,144 +352,22 @@ void changeState(uint8_t stateToChangeTo)
     {
     case STATE_CONNECTING_TO_WIFI:
         state = STATE_CONNECTING_TO_WIFI;
-        // setBothLEDs(LED_BLUE);
-        // setStatusLED(LED_BLUE);
-        // setSTRIP(LED_OFF);
         break;
     case STATE_CONNECTING_TO_SWITCHER:
         state = STATE_CONNECTING_TO_SWITCHER;
-        // setBothLEDs(LED_PINK);
-        // setStatusLED(LED_PINK);
-        // setSTRIP(LED_OFF);
         break;
     case STATE_RUNNING:
         state = STATE_RUNNING;
-        // setBothLEDs(LED_GREEN);
-        // setStatusLED(LED_ORANGE);
         break;
     }
 }
 
-// Set the color of both LEDs
-// void setBothLEDs(uint8_t color)
-// {
-//     setLED(color, PIN_RED1, PIN_GREEN1, PIN_BLUE1);
-//     setLED(color, PIN_RED2, PIN_GREEN2, PIN_BLUE2);
-// }
-
-// Set the color of the 1st LED
-// void setLED1(uint8_t color)
-// {
-//     setLED(color, PIN_RED1, PIN_GREEN1, PIN_BLUE1);
-// }
-
-// Set the color of the 2nd LED
-// void setLED2(uint8_t color)
-// {
-//     setLED(color, PIN_RED2, PIN_GREEN2, PIN_BLUE2);
-// }
-
-// Set the color of a LED using the given pins
-// void setLED(uint8_t color, int pinRed, int pinGreen, int pinBlue)
-// {
-//     uint8_t ledBrightness = settings.ledBrightness;
-//     void (*writeFunc)(uint8_t, uint8_t);
-//     if (ledBrightness >= 0xff)
-//     {
-//         writeFunc = &digitalWrite;
-//         ledBrightness = 1;
-//     }
-//     else
-//     {
-//         writeFunc = &analogWriteWrapper;
-//     }
-
-//     switch (color)
-//     {
-//     case LED_OFF:
-//         digitalWrite(pinRed, 0);
-//         digitalWrite(pinGreen, 0);
-//         digitalWrite(pinBlue, 0);
-//         break;
-//     case LED_RED:
-//         writeFunc(pinRed, ledBrightness);
-//         digitalWrite(pinGreen, 0);
-//         digitalWrite(pinBlue, 0);
-//         break;
-//     case LED_GREEN:
-//         digitalWrite(pinRed, 0);
-//         writeFunc(pinGreen, ledBrightness);
-//         digitalWrite(pinBlue, 0);
-//         break;
-//     case LED_BLUE:
-//         digitalWrite(pinRed, 0);
-//         digitalWrite(pinGreen, 0);
-//         writeFunc(pinBlue, ledBrightness);
-//         break;
-//     case LED_YELLOW:
-//         writeFunc(pinRed, ledBrightness);
-//         writeFunc(pinGreen, ledBrightness);
-//         digitalWrite(pinBlue, 0);
-//         break;
-//     case LED_PINK:
-//         writeFunc(pinRed, ledBrightness);
-//         digitalWrite(pinGreen, 0);
-//         writeFunc(pinBlue, ledBrightness);
-//         break;
-//     case LED_WHITE:
-//         writeFunc(pinRed, ledBrightness);
-//         writeFunc(pinGreen, ledBrightness);
-//         writeFunc(pinBlue, ledBrightness);
-//         break;
-//     }
-// }
 
 void analogWriteWrapper(uint8_t pin, uint8_t value)
 {
     analogWrite(pin, value);
 }
 
-// Set the color of the LED strip, except for the status LED
-// void setSTRIP(uint8_t color)
-// {
-//     if (numTallyLEDs > 0 && tallyLEDs[0] != color_led[color])
-//     {
-//         for (int i = 0; i < numTallyLEDs; i++)
-//         {
-//             tallyLEDs[i] = color_led[color];
-//         }
-//         neopixelsUpdated = true;
-// #ifdef DEBUG_LED_STRIP
-//         Serial.println("Tally:  ");
-//         printLeds();
-// #endif
-//     }
-// }
-
-// Set the single status LED (last LED)
-// void setStatusLED(uint8_t color)
-// {
-//     if (numStatusLEDs > 0 && statusLED[0] != color_led[color])
-//     {
-//         for (int i = 0; i < numStatusLEDs; i++)
-//         {
-//             statusLED[i] = color_led[color];
-//             if (color == LED_ORANGE)
-//             {
-//                 statusLED[i].fadeToBlackBy(230);
-//             }
-//             else
-//             {
-//                 statusLED[i].fadeToBlackBy(0);
-//             }
-//         }
-//         neopixelsUpdated = true;
-// #ifdef DEBUG_LED_STRIP
-//         Serial.println("Status: ");
-//         printLeds();
-// #endif
-//     }
-// }
 
 #ifdef DEBUG_LED_STRIP
 void printLeds()
@@ -747,31 +403,6 @@ int getTallyState(uint16_t tallyNo)
     }
 }
 
-// int getLedColor(int tallyMode, int tallyNo)
-// {
-//     if (tallyMode == MODE_ON_AIR)
-//     {
-
-//         return LED_OFF;
-//     }
-
-//     int tallyState = getTallyState(tallyNo);
-
-//     if (tallyState == TALLY_FLAG_PROGRAM)
-//     { // if tally live
-//         return LED_RED;
-//     }
-//     else if ((tallyState == TALLY_FLAG_PREVIEW      // if tally preview
-//               || tallyMode == MODE_PREVIEW_STAY_ON) // or preview stay on
-//              && tallyMode != MODE_PROGRAM_ONLY)
-//     { // and not program only
-//         return LED_GREEN;
-//     }
-//     else
-//     { // if tally is neither
-//         return LED_OFF;
-//     }
-// }
 
 // Serve setup web page to client, by sending HTML with the correct variables
 void handleRoot()
@@ -809,10 +440,6 @@ void handleRoot()
     html += "</td></tr><tr><td><br></td></tr><tr><td>Siła sygnału:</td><td colspan=\"2\">";
     html += WiFi.RSSI();
     html += " dBm</td></tr>";
-    // Commented out for users without batteries
-    //  html += "<tr><td><br></td></tr><tr><td>Battery voltage:</td><td colspan=\"2\">";
-    //  html += dtostrf(uBatt, 0, 3, buffer);
-    //  html += " V</td></tr>";
     html += "<tr><td>Statyczny adres IP:</td><td colspan=\"2\">";
     html += settings.staticIP == true ? "Tak" : "Nie";
     html += "</td></tr><tr><td> Adres IP:</td><td colspan=\"2\">";
@@ -1084,37 +711,3 @@ String getSSID()
 {
     return WiFi.SSID();
 }
-
-// Commented out for users without batteries - Also timer is not done properly
-// Main loop for things that should work every second
-//  void batteryLoop() {
-//      if (secLoop >= 400) {
-//          //Get and calculate battery current
-//          int raw = analogRead(A0);
-//          uBatt = (double)raw / 1023 * 4.2;
-
-//         //Set back status LED after one second to working LED_BLUE if it was changed by anything
-//         if (lowLedOn) {
-//             setStatusLED(LED_ORANGE);
-//             lowLedOn = false;
-//         }
-
-//         //Blink every 5 seconds for one second if battery current is under 3.6V
-//         if (lowLedCount >= 5 && uBatt <= 3.600) {
-//             setStatusLED(LED_YELLOW);
-//             lowLedOn = true;
-//             lowLedCount = 0;
-//         }
-//         lowLedCount++;
-
-//        //Turn stripes of and put ESP to deepsleep if battery is too low
-//        if(uBatt <= 3.499) {
-//            setSTRIP(LED_OFF);
-//            setStatusLED(LED_OFF);
-//            ESP.deepSleep(0, WAKE_NO_RFCAL);
-//        }
-
-//         secLoop = 0;
-//     }
-//     secLoop++;
-// }
