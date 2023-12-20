@@ -367,9 +367,9 @@ void loop()
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
             Serial.print("Live: ");
-            Serial.print(liveFlag);
+            Serial.print(liveFlag + 1);
             Serial.print(" Prev: ");
-            Serial.println(prevFlag);
+            Serial.println(prevFlag + 1);
         }
         if ((bytesAvailable && readByte == '2') || digitalRead(D1) == LOW)
         {
@@ -388,9 +388,9 @@ void loop()
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
             Serial.print("Live: ");
-            Serial.print(liveFlag);
+            Serial.print(liveFlag + 1);
             Serial.print(" Prev: ");
-            Serial.println(prevFlag);
+            Serial.println(prevFlag + 1);
         }
         if ((bytesAvailable && readByte == '3') || digitalRead(D2) == LOW)
         {
@@ -409,9 +409,9 @@ void loop()
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
             Serial.print("Live: ");
-            Serial.print(liveFlag);
+            Serial.print(liveFlag + 1);
             Serial.print(" Prev: ");
-            Serial.println(prevFlag);
+            Serial.println(prevFlag + 1);
         }
         if ((bytesAvailable && readByte == '4') || digitalRead(D3) == LOW)
         {
@@ -430,9 +430,9 @@ void loop()
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
             Serial.print("Live: ");
-            Serial.print(liveFlag);
+            Serial.print(liveFlag + 1);
             Serial.print(" Prev: ");
-            Serial.println(prevFlag);
+            Serial.println(prevFlag + 1);
         }
         if ((bytesAvailable && readByte == '6') || digitalRead(D4) == LOW)
         {
@@ -451,9 +451,9 @@ void loop()
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
             Serial.print("Live: ");
-            Serial.print(liveFlag);
+            Serial.print(liveFlag + 1);
             Serial.print(" Prev: ");
-            Serial.println(prevFlag);
+            Serial.println(prevFlag + 1);
         }
         if ((bytesAvailable && readByte == '7') || digitalRead(D5) == LOW)
         {
@@ -472,9 +472,9 @@ void loop()
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
             Serial.print("Live: ");
-            Serial.print(liveFlag);
+            Serial.print(liveFlag + 1);
             Serial.print(" Prev: ");
-            Serial.println(prevFlag);
+            Serial.println(prevFlag + 1);
         }
         if ((bytesAvailable && readByte == '8') || digitalRead(D6) == LOW)
         {
@@ -493,9 +493,9 @@ void loop()
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
             Serial.print("Live: ");
-            Serial.print(liveFlag);
+            Serial.print(liveFlag + 1);
             Serial.print(" Prev: ");
-            Serial.println(prevFlag);
+            Serial.println(prevFlag + 1);
         }
         if ((bytesAvailable && readByte == '9') || digitalRead(D7) == LOW)
         {
@@ -514,9 +514,9 @@ void loop()
                 tallyServer.setTallyFlag(prevFlag, 2);
             }
             Serial.print("Live: ");
-            Serial.print(liveFlag);
+            Serial.print(liveFlag + 1);
             Serial.print(" Prev: ");
-            Serial.println(prevFlag);
+            Serial.println(prevFlag + 1);
         }
 
         // Serial.print("Live: ");
@@ -776,7 +776,9 @@ int getTallyState(uint16_t tallyNo)
 // Serve setup web page to client, by sending HTML with the correct variables
 void handleRoot()
 {
-    String html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width,initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><script>function switchIpField(e){console.log(\"switch\");console.log(e);var target=e.srcElement||e.target;var maxLength=parseInt(target.attributes[\"maxlength\"].value,10);var myLength=target.value.length;if(myLength>=maxLength){var next=target.nextElementSibling;if(next!=null){if(next.className.includes(\"IP\")){next.focus();}}}else if(myLength==0){var previous=target.previousElementSibling;if(previous!=null){if(previous.className.includes(\"IP\")){previous.focus();}}}}function ipFieldFocus(e){console.log(\"focus\");console.log(e);var target=e.srcElement||e.target;target.select();}function load(){var containers=document.getElementsByClassName(\"IP\");for(var i=0;i<containers.length;i++){var container=containers[i];container.oninput=switchIpField;container.onfocus=ipFieldFocus;}containers=document.getElementsByClassName(\"tIP\");for(var i=0;i<containers.length;i++){var container=containers[i];container.oninput=switchIpField;container.onfocus=ipFieldFocus;}toggleStaticIPFields();}function toggleStaticIPFields(){var enabled=document.getElementById(\"staticIP\").checked;document.getElementById(\"staticIPHidden\").disabled=enabled;var staticIpFields=document.getElementsByClassName('tIP');for(var i=0;i<staticIpFields.length;i++){staticIpFields[i].disabled=!enabled;}}</script><style>a{color:#0F79E0}</style><body style=\"font-family:Verdana;white-space:nowrap;\"onload=\"load()\"><table cellpadding=\"2\"style=\"width:100%\"><tr bgcolor=\"#777777\"style=\"color:#ffffff;font-size:.8em;\"><td colspan=\"3\"><h1>&nbsp;DataVideo Tally Serwer</h1><h2>&nbsp;Status:</h2></td></tr><tr><td><br></td><td></td><td style=\"width:100%;\"></td></tr><tr><td>Status połączenia:</td><td colspan=\"2\">";
+    String html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width,initial-scale=1.0\"><title>DataVideo Tally Serwer</title>";
+    html += "<style>#staticIP {accent-color: #07b50c;}.s777777 h1,.s777777 h2 {color: #07b50c;}.fr{float: right}body {display: flex;align-items: center;justify-content: center;width: 100vw;overflow-x: hidden;font-family: \"Arial\", sans-serif;background-color: #242424;color: #fff;table {width: 80%;max-width: 1200px;background-color: #3b3b3b;padding: 20px;margin: 20px;border-radius: 10px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);border-radius: 12px;overflow: hidden;border-spacing: 0;padding: 5px 45px;box-sizing: border-box;}tr.s777777 {background-color: transparent;color: #07b50c !important;}tr.cccccc {background-color: transparent;} tr.cccccc p {font-size: 16px;}input[type=\"checkbox\"] {width: 17.5px;aspect-ratio: 1;cursor: pointer;}td {cursor: default;user-select: none;}input {border-radius: 6px;cursor: text;}select {border-radius: 6px;cursor: pointer;}td.fr input {background-color: #07b50c !important; -webkit-appearance: none; accent-color: #07b50c !important;color: white;padding: 7px 17px;cursor: pointer;}* {line-height: 1.2;}@media screen and (max-width: 730px) {body {width: 100vw;margin: 0;padding: 10px;}table {width: 100%;padding: 0 10px;margin: 0;}}</style>";
+    html += "</head><script>function switchIpField(e){console.log(\"switch\");console.log(e);var target=e.srcElement||e.target;var maxLength=parseInt(target.attributes[\"maxlength\"].value,10);var myLength=target.value.length;if(myLength>=maxLength){var next=target.nextElementSibling;if(next!=null){if(next.className.includes(\"IP\")){next.focus();}}}else if(myLength==0){var previous=target.previousElementSibling;if(previous!=null){if(previous.className.includes(\"IP\")){previous.focus();}}}}function ipFieldFocus(e){console.log(\"focus\");console.log(e);var target=e.srcElement||e.target;target.select();}function load(){var containers=document.getElementsByClassName(\"IP\");for(var i=0;i<containers.length;i++){var container=containers[i];container.oninput=switchIpField;container.onfocus=ipFieldFocus;}containers=document.getElementsByClassName(\"tIP\");for(var i=0;i<containers.length;i++){var container=containers[i];container.oninput=switchIpField;container.onfocus=ipFieldFocus;}toggleStaticIPFields();}function toggleStaticIPFields(){var enabled=document.getElementById(\"staticIP\").checked;document.getElementById(\"staticIPHidden\").disabled=enabled;var staticIpFields=document.getElementsByClassName('tIP');for(var i=0;i<staticIpFields.length;i++){staticIpFields[i].disabled=!enabled;}}</script><style>a{color:#0F79E0}</style><body style=\"font-family:Verdana;white-space:nowrap;\"onload=\"load()\"><table cellpadding=\"2\"style=\"width:100%\"><tr class=\"s777777\"style=\"font-size:.8em;\"><td colspan=\"3\"><h1>&nbsp;DataVideo Tally Serwer</h1><h2>&nbsp;Status:</h2></td></tr><tr><td><br></td><td></td><td style=\"width:100%;\"></td></tr><tr><td>Status połączenia:</td><td colspan=\"2\">";
     switch (WiFi.status())
     {
     case WL_CONNECTED:
@@ -792,9 +794,12 @@ void handleRoot()
         html += "Zmiana stanu...";
         break;
     case WL_DISCONNECTED:
-        html += "Tryb stacji niedostępny";
+        html += "Tryb stacji niedostępny i nie wiem co to znaczy";
         break;
-    case -1:
+    case WL_CONNECTION_LOST:
+        html += "Utracono połączenie WiFi";
+        break;
+    default:
         html += "Timeout";
         break;
     }
@@ -818,7 +823,7 @@ void handleRoot()
     html += WiFi.gatewayIP().toString();
     html += "</td></tr><tr><td><br></td></tr>";
 
-    html += "<tr bgcolor=\"#777777\"style=\"color:#ffffff;font-size:.8em;\"><td colspan=\"3\"><h2>&nbsp;Ustawienia:</h2></td></tr><tr><td><br></td></tr><form action=\"/save\"method=\"post\"><tr><td>Nazwa urządzenia: </td><td><input type=\"text\"size=\"30\"maxlength=\"30\"name=\"tName\"value=\"";
+    html += "<tr class=\"s777777\"style=\"font-size:.8em;\"><td colspan=\"3\"><h2>&nbsp;Ustawienia:</h2></td></tr><tr><td><br></td></tr><form action=\"/save\"method=\"post\"><tr><td>Nazwa urządzenia: </td><td><input type=\"text\"size=\"30\"maxlength=\"30\"name=\"tName\"value=\"";
     html += WiFi.hostname();
     html += "\"required/></td></tr><tr style=\"display:none;\"><td><br></td></tr><tr style=\"display:none;\"><td>Numer urządzenia Tally: </td><td><input type=\"number\"size=\"5\"min=\"1\"max=\"41\"name=\"tNo\"value=\"";
     settings.tallyNo = 1;
@@ -907,7 +912,7 @@ void handleRoot()
     html += settings.tallyGateway[3];
     html += "\"required/></td></tr>";
 
-    html += "<tr><td><br></td></tr><tr><td/><td style=\"float: right;\"><input type=\"submit\"value=\"Zapisz zmiany\"/></td></tr></form><tr bgcolor=\"#cccccc\"style=\"font-size: .8em;\"><td colspan=\"3\"><p>&nbsp;Stworzone przez <a href=\"https://github.com/Dodo765\" target=\"_blank\">Dominik Kawalec</a></p><p>&nbsp;Napisane w oparciu o bibliotekę <a href=\"https://github.com/kasperskaarhoj/SKAARHOJ-Open-Engineering/tree/master/ArduinoLibs\" target=\"_blank\">SKAARHOJ</a></p></td></tr></table></body></html>";
+    html += "<tr><td><br></td></tr><tr><td/><td class=\"fr\"><input type=\"submit\"value=\"Zapisz zmiany\"/></td></tr></form><tr class=\"cccccc\" style=\"font-size: .8em;\"><td colspan=\"3\"><p>&nbsp;Stworzone przez <a href=\"https://github.com/Dodo765\" target=\"_blank\">Dominik Kawalec</a></p><p>&nbsp;Napisane w oparciu o bibliotekę <a href=\"https://github.com/kasperskaarhoj/SKAARHOJ-Open-Engineering/tree/master/ArduinoLibs\" target=\"_blank\">SKAARHOJ</a></p></td></tr></table></body></html>";
     server.send(200, "text/html", html);
 }
 
@@ -916,7 +921,7 @@ void handleSave()
 {
     if (server.method() != HTTP_POST)
     {
-        server.send(405, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body style=\"font-family:Verdana;\"><table bgcolor=\"#777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr></table><br>Żądanie bez zmiany ustawień nie jest możliwe</body></html>");
+        server.send(405, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body style=\"font-family:Verdana;\"><table class=\"s777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr></table><br>Żądanie bez zmiany ustawień nie jest możliwe</body></html>");
     }
     else
     {
@@ -1044,7 +1049,7 @@ void handleSave()
             EEPROM.put(0, settings);
             EEPROM.commit();
 
-            server.send(200, "text/html", (String) "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body><table bgcolor=\"#777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"font-family:Verdana;color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr></table><br>Ustawienia zapisane pomyślnie!</body></html>");
+            server.send(200, "text/html", (String) "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body><table class=\"s777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"font-family:Verdana;color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr></table><br>Ustawienia zapisane pomyślnie!</body></html>");
 
             // Delay to let data be saved, and the response to be sent properly to the client
             server.close(); // Close server to flush and ensure the response gets to the client
@@ -1072,7 +1077,7 @@ void handleSave()
 // Send 404 to client in case of invalid webpage being requested.
 void handleNotFound()
 {
-    server.send(404, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body style=\"font-family:Verdana;\"><table bgcolor=\"#777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp DataVideo Tally Serwer</h1></td></tr></table><br>404 - strona nie znaleziona</body></html>");
+    server.send(404, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body style=\"font-family:Verdana;\"><table class=\"s777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp DataVideo Tally Serwer</h1></td></tr></table><br>404 - strona nie znaleziona</body></html>");
 }
 
 String getSSID()

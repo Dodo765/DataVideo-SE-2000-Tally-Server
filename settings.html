@@ -29,14 +29,14 @@
 				padding: 5px 45px;
 				box-sizing: border-box;
 			}
-			tr[bgcolor="#777777"] {
+			tr.s777777 {
 				background-color: transparent;
-				color: #22e628 !important;
+				color: #07b50c !important;
 			}
-			tr[bgcolor="#cccccc"] {
+			tr.cccccc {
 				background-color: transparent;
 			}
-			tr[bgcolor="#cccccc"] p {
+			tr.cccccc p {
 				font-size: 16px;
 			}
 			input[type="checkbox"] {
@@ -56,11 +56,21 @@
 				border-radius: 6px;
 				cursor: pointer;
 			}
-			td[style="float: right"] input {
-				background-color: #22e628 !important;
+			td.fr input {
+				background-color: #07b50c !important;
 				color: white;
 				padding: 7px 17px;
 				cursor: pointer;
+			}
+			.fr {
+				float: right;
+			}
+			.s777777 h1,
+			.s777777 h2 {
+				color: #07b50c;
+			}
+			#staticIP {
+				accent-color: #07b50c;
 			}
 			* {
 				line-height: 1.2;
@@ -145,7 +155,7 @@
 
 	<body style="font-family: Verdana; white-space: nowrap" onload="load()">
 		<table cellpadding="2">
-			<tr bgcolor="#777777" style="color: #ffffff; font-size: 0.8em">
+			<tr class="s777777" style="font-size: 0.8em">
 				<td colspan="3">
 					<h1>&nbsp;Tally Light setup</h1>
 					<h2>&nbsp;Status:</h2>
@@ -208,7 +218,7 @@
 			<tr>
 				<td><br /></td>
 			</tr>
-			<tr bgcolor="#777777" style="color: #ffffff; font-size: 0.8em">
+			<tr class="s777777" style="font-size: 0.8em">
 				<td colspan="3">
 					<h2>&nbsp;Settings:</h2>
 				</td>
@@ -355,12 +365,12 @@
 				</tr>
 				<tr>
 					<td />
-					<td style="float: right">
+					<td class="fr">
 						<input type="submit" value="Save Changes" />
 					</td>
 				</tr>
 			</form>
-			<tr bgcolor="#cccccc" style="font-size: 0.8em">
+			<tr class="cccccc" style="font-size: 0.8em">
 				<td colspan="3">
 					<p>&nbsp;Stworzone przez <a href="https://github.com/Dodo765" target="_blank">Dominik Kawalec</a></p>
 					<p>
