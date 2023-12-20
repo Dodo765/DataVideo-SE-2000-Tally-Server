@@ -4,15 +4,10 @@
 #define VERSION "dev"
 #endif
 
-// #define DEBUG_LED_STRIP
 #define FASTLED_ALLOW_INTERRUPTS 0
 
 #ifndef CHIP_FAMILY
 #define CHIP_FAMILY "Unknown"
-#endif
-
-#ifndef VERSION
-#define VERSION "Unknown"
 #endif
 
 #define DISPLAY_NAME "Tally Test server"
@@ -28,7 +23,7 @@
 #include <FastLED.h>
 
 // Map "old" LED colors to CRGB colors
-CRGB color_led[8] = {CRGB::Black, CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Yellow, CRGB::Fuchsia, CRGB::White, CRGB::Orange};
+// CRGB color_led[8] = {CRGB::Black, CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Yellow, CRGB::Fuchsia, CRGB::White, CRGB::Orange};
 
 // Define states
 #define STATE_STARTING 0
@@ -339,7 +334,6 @@ void loop()
         tallyServer.resetTallyFlags();
     }
 
-
     // Handle web interface
     server.handleClient();
 }
@@ -362,33 +356,13 @@ void changeState(uint8_t stateToChangeTo)
     }
 }
 
-
 void analogWriteWrapper(uint8_t pin, uint8_t value)
 {
     analogWrite(pin, value);
 }
 
-
-#ifdef DEBUG_LED_STRIP
-void printLeds()
-{
-    for (int i = 0; i < settings.neopixelsAmount; i++)
-    {
-        Serial.print(i);
-        Serial.print(", RGB: ");
-        Serial.print(leds[i].r);
-        Serial.print(", ");
-        Serial.print(leds[i].g);
-        Serial.print(", ");
-        Serial.println(leds[i].b);
-    }
-    Serial.println();
-}
-#endif
-
 int getTallyState(uint16_t tallyNo)
 {
-
     if (tallyFlag & TALLY_FLAG_PROGRAM)
     {
         return TALLY_FLAG_PROGRAM;
@@ -402,7 +376,6 @@ int getTallyState(uint16_t tallyNo)
         return TALLY_FLAG_OFF;
     }
 }
-
 
 // Serve setup web page to client, by sending HTML with the correct variables
 void handleRoot()
