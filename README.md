@@ -8,4 +8,6 @@
 <h5>It communicates with DataVideo SE-2000 via Tally port on the mixer
   <p></p>
   <p><img src="https://github.com/Dodo765/datavideo/blob/main/img/Datavideo.jpg"</p>
+    <p></p>
+  Connection Schematic is <a href="https://resource.holdan.co.uk/Datavideo/manuals/Datavideo_SE-2000.pdf"> HERE </a>
 </h5>
