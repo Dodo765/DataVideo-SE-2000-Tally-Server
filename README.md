@@ -15,6 +15,12 @@
     <img src="https://github.com/Dodo765/datavideo/blob/main/img/Datavideo.jpg">
   </p>
   <p></p>
-  Connection Schematic is <a href="https://resource.holdan.co.uk/Datavideo/manuals/Datavideo_SE-2000.pdf"> HERE </a>
+  Connection Schematic is <a href="https://resource.holdan.co.uk/Datavideo/manuals/Datavideo_SE-2000.pdf"> HERE </a> on page 27.
+  <p></p>
+  <p>
+    I used NodeMCU V3 and connected wires to VGA 15 pin connector from D0 to D7 according to the above schematic
+    <br>
+    Just for your knowledge - 1st pin (D0) must have external pullup resistor.
+  </p>
 </h5>
 
