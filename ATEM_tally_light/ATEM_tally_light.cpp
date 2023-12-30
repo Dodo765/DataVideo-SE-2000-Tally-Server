@@ -134,10 +134,28 @@ void tallySetState()
     Serial.println(prevFlag + 1);
 }
 
+// set flags with redundancy check
+void setPreviewFlag(int number)
+{
+    if (prevFlag != number)
+    {
+        prevFlag = number;
+        tallySetState();
+    }
+}
+
+void setLiveFlag(int number)
+{
+    if (liveFlag != number)
+    {
+        liveFlag = number;
+        tallySetState();
+    }
+}
+
 // Perform initial setup on power on
 void setup()
 {
-
     pinMode(D0, INPUT_PULLUP);
     pinMode(D1, INPUT_PULLUP);
     pinMode(D2, INPUT_PULLUP);
@@ -244,7 +262,14 @@ void loop()
         break;
 
     case STATE_RUNNING:
-
+        if ((bytesAvailable && readByte == 'i'))
+        {
+            Serial.println("Info:");
+            Serial.print("Live: ");
+            Serial.print(liveFlag + 1);
+            Serial.print(" Prev: ");
+            Serial.println(prevFlag + 1);
+        }
         if ((bytesAvailable && readByte == 'r'))
         {
             tallyFlag++;
@@ -274,45 +299,37 @@ void loop()
                 tallyServer.setTallyFlag(i, tallyFlag);
             }
         }
-        if ((bytesAvailable && readByte == '1') || digitalRead(D0) == LOW)
+        if ((bytesAvailable && readByte == '1') || !digitalRead(D0))
         {
-            liveFlag = 0;
-            tallySetState();
+            setLiveFlag(0);
         }
-        if ((bytesAvailable && readByte == '2') || digitalRead(D1) == LOW)
+        if ((bytesAvailable && readByte == '2') || !digitalRead(D1))
         {
-            liveFlag = 1;
-            tallySetState();
+            setLiveFlag(1);
         }
-        if ((bytesAvailable && readByte == '3') || digitalRead(D2) == LOW)
+        if ((bytesAvailable && readByte == '3') || !digitalRead(D2))
         {
-            liveFlag = 2;
-            tallySetState();
+            setLiveFlag(2);
         }
-        if ((bytesAvailable && readByte == '4') || digitalRead(D3) == LOW)
+        if ((bytesAvailable && readByte == '4') || !digitalRead(D3))
         {
-            liveFlag = 3;
-            tallySetState();
+            setLiveFlag(3);
         }
-        if ((bytesAvailable && readByte == '6') || digitalRead(D4) == LOW)
+        if ((bytesAvailable && readByte == '6') || !digitalRead(D4))
         {
-            prevFlag = 0;
-            tallySetState();
+            setPreviewFlag(0);
         }
-        if ((bytesAvailable && readByte == '7') || digitalRead(D5) == LOW)
+        if ((bytesAvailable && readByte == '7') || !digitalRead(D5))
         {
-            prevFlag = 1;
-            tallySetState();
+            setPreviewFlag(1);
         }
-        if ((bytesAvailable && readByte == '8') || digitalRead(D6) == LOW)
+        if ((bytesAvailable && readByte == '8') || !digitalRead(D6))
         {
-            prevFlag = 2;
-            tallySetState();
+            setPreviewFlag(2);
         }
-        if ((bytesAvailable && readByte == '9') || digitalRead(D7) == LOW)
+        if ((bytesAvailable && readByte == '9') || !digitalRead(D7))
         {
-            prevFlag = 3;
-            tallySetState();
+            setPreviewFlag(3);
         }
 
         delay(10);
