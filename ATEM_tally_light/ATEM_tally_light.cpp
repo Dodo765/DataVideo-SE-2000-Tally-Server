@@ -16,11 +16,18 @@
 
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h>
 
 #include <EEPROM.h>
 #include <ATEMmin.h>
 #include <TallyServer.h>
 #include <FastLED.h>
+
+float firmware_version = 0.11;
+#define VERSION_CHECK_URL "http://api.dominikkawalec.pl:3000/datavideo/firmware/version"
+#define FIRMWARE_URL "api.dominikkawalec.pl", 3000, "/datavideo/firmware/firmware.bin"
 
 // Map "old" LED colors to CRGB colors
 // CRGB color_led[8] = {CRGB::Black, CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Yellow, CRGB::Fuchsia, CRGB::White, CRGB::Orange};
@@ -100,6 +107,102 @@ bool firstRun = true;
 int bytesAvailable = false;
 uint8_t readByte;
 
+void update_started()
+{
+    Serial.println("CALLBACK:  HTTP update process started");
+}
+
+void update_finished()
+{
+    Serial.println("CALLBACK:  HTTP update process finished");
+}
+
+void update_progress(int cur, int total)
+{
+    Serial.printf("CALLBACK:  HTTP update process at %d of %d bytes...\n", cur, total);
+}
+
+void update_error(int err)
+{
+    Serial.printf("CALLBACK:  HTTP update fatal error code %d\n", err);
+}
+
+float getRemoteFirmwareVersion()
+{
+    WiFiClient client;
+    HTTPClient http;
+    if (http.begin(client, VERSION_CHECK_URL))
+    {
+        Serial.println(http.GET());
+        int httpCode = http.GET();
+        if (httpCode == HTTP_CODE_OK)
+        {
+            String version = http.getString();
+            return version.toFloat();
+        }
+        else
+        {
+            return 0; // server online
+        }
+    }
+    return 0; // Return empty string if unable to fetch version
+}
+
+void updateSoftware()
+{
+
+    WiFiClient client;
+
+    float remoteVersion = getRemoteFirmwareVersion();
+
+    if (remoteVersion != 0 && remoteVersion > firmware_version)
+    {
+        Serial.print("New firmware available: ");
+        Serial.print(firmware_version);
+        Serial.print(" -> ");
+        Serial.print(remoteVersion);
+        Serial.println(". Starting update...");
+
+        // Add optional callback notifiers
+        ESPhttpUpdate.onStart(update_started);
+        ESPhttpUpdate.onEnd(update_finished);
+        ESPhttpUpdate.onProgress(update_progress);
+        ESPhttpUpdate.onError(update_error);
+
+        ESPhttpUpdate.rebootOnUpdate(false); // remove automatic update
+
+        // Specify the server IP, port, and firmware path for update
+        t_httpUpdate_return ret = ESPhttpUpdate.update(client, FIRMWARE_URL);
+
+        switch (ret)
+        {
+        case HTTP_UPDATE_FAILED:
+            Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+            Serial.println(F("Retry in 10secs!"));
+            delay(10000); // Wait 10secs before retrying
+            break;
+
+        case HTTP_UPDATE_NO_UPDATES:
+            Serial.println("HTTP_UPDATE_NO_UPDATES");
+            break;
+
+        case HTTP_UPDATE_OK:
+            Serial.println("HTTP_UPDATE_OK");
+            delay(1000); // Wait a second and restart
+            ESP.restart();
+            break;
+        }
+    }
+    else if (remoteVersion == 0)
+    {
+        Serial.println("Server offline");
+    }
+    else
+    {
+        Serial.println("Firmware is up to date. No update needed.");
+    }
+}
+
 void onImprovWiFiErrorCb(ImprovTypes::Error err)
 {
 }
@@ -176,9 +279,11 @@ void setup()
 
     Serial.println(settings.tallyName);
 
+    IPAddress primaryDNS(1, 1, 1, 1);   // optional
+    IPAddress secondaryDNS(8, 8, 4, 4); // optional
     if (settings.staticIP && settings.tallyIP != IPADDR_NONE)
     {
-        WiFi.config(settings.tallyIP, settings.tallyGateway, settings.tallySubnetMask);
+        WiFi.config(settings.tallyIP, settings.tallyGateway, settings.tallySubnetMask, primaryDNS, secondaryDNS);
     }
     else
     {
@@ -247,7 +352,12 @@ void loop()
             Serial.println("Subnet Mask:         " + WiFi.subnetMask().toString());
             Serial.println("Gateway IP:          " + WiFi.gatewayIP().toString());
 
-            Serial.println("Press enter (\\r) to loop through tally states.");
+            Serial.println();
+            Serial.print(F("Current firmware version: "));
+            Serial.println(firmware_version);
+            updateSoftware();
+
+            Serial.println("Press enter (c) to loop through tally states, i to see info, r to restart.");
             changeState(STATE_RUNNING);
         }
         else if (firstRun)
@@ -262,6 +372,11 @@ void loop()
         break;
 
     case STATE_RUNNING:
+        if ((bytesAvailable && readByte == 'r'))
+        {
+            Serial.println("Restarting ...");
+            ESP.restart();
+        }
         if ((bytesAvailable && readByte == 'i'))
         {
             Serial.println("Info:");
@@ -270,7 +385,7 @@ void loop()
             Serial.print(" Prev: ");
             Serial.println(prevFlag + 1);
         }
-        if ((bytesAvailable && readByte == 'r'))
+        if ((bytesAvailable && readByte == 'c'))
         {
             tallyFlag++;
             tallyFlag %= 4;
@@ -538,7 +653,7 @@ void handleSave()
 {
     if (server.method() != HTTP_POST)
     {
-        server.send(405, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body style=\"font-family:Verdana;\"><table class=\"s777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr></table><br>Żądanie bez zmiany ustawień nie jest możliwe</body></html>");
+        server.send(405, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title><style>#staticIP {accent-color: #07b50c;}.s777777 h1,.s777777 h2 {color: #07b50c;}.fr{float: right}body {display: flex;align-items: center;justify-content: center;width: 100vw;overflow-x: hidden;font-family: \"Arial\", sans-serif;background-color: #242424;color: #fff;table {width: 80%;max-width: 1200px;background-color: #3b3b3b;padding: 20px;margin: 20px;border-radius: 10px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);border-radius: 12px;overflow: hidden;border-spacing: 0;padding: 5px 45px;box-sizing: border-box;}tr.s777777 {background-color: transparent;color: #07b50c !important;}tr.cccccc {background-color: transparent;} tr.cccccc p {font-size: 16px;}input[type=\"checkbox\"] {width: 17.5px;aspect-ratio: 1;cursor: pointer;}td {cursor: default;user-select: none;}input {border-radius: 6px;cursor: text;}select {border-radius: 6px;cursor: pointer;}td.fr input {background-color: #07b50c !important; -webkit-appearance: none; accent-color: #07b50c !important;color: white;padding: 7px 17px;cursor: pointer;}* {line-height: 1.2;}@media screen and (max-width: 730px) {body {width: 100vw;margin: 0;padding: 10px;}table {width: 100%;padding: 0 10px;margin: 0;}}</style></head><body style=\"font-family:Verdana;\"><table class=\"s777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr><tr><td><h2 style=\"color: white\">Żądanie bez zmiany ustawień nie jest możliwe</td></tr></table></body></html>");
     }
     else
     {
@@ -666,7 +781,7 @@ void handleSave()
             EEPROM.put(0, settings);
             EEPROM.commit();
 
-            server.send(200, "text/html", (String) "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body><table class=\"s777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"font-family:Verdana;color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr></table><br>Ustawienia zapisane pomyślnie!</body></html>");
+            server.send(200, "text/html", (String) "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title><style>#staticIP {accent-color: #07b50c;}.s777777 h1,.s777777 h2 {color: #07b50c;}.fr{float: right}body {display: flex;align-items: center;justify-content: center;width: 100vw;overflow-x: hidden;font-family: \"Arial\", sans-serif;background-color: #242424;color: #fff;table {width: 80%;max-width: 1200px;background-color: #3b3b3b;padding: 20px;margin: 20px;border-radius: 10px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);border-radius: 12px;overflow: hidden;border-spacing: 0;padding: 5px 45px;box-sizing: border-box;}tr.s777777 {background-color: transparent;color: #07b50c !important;}tr.cccccc {background-color: transparent;} tr.cccccc p {font-size: 16px;}input[type=\"checkbox\"] {width: 17.5px;aspect-ratio: 1;cursor: pointer;}td {cursor: default;user-select: none;}input {border-radius: 6px;cursor: text;}select {border-radius: 6px;cursor: pointer;}td.fr input {background-color: #07b50c !important; -webkit-appearance: none; accent-color: #07b50c !important;color: white;padding: 7px 17px;cursor: pointer;}* {line-height: 1.2;}@media screen and (max-width: 730px) {body {width: 100vw;margin: 0;padding: 10px;}table {width: 100%;padding: 0 10px;margin: 0;}}</style></head><body><table class=\"s777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"font-family:Verdana;color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp;DataVideo Tally Serwer</h1></td></tr><tr><td><h2 style=\"color: white\">Ustawienia zapisane pomyślnie!</td></tr></table></body></html>");
 
             // Delay to let data be saved, and the response to be sent properly to the client
             server.close(); // Close server to flush and ensure the response gets to the client
@@ -694,7 +809,7 @@ void handleSave()
 // Send 404 to client in case of invalid webpage being requested.
 void handleNotFound()
 {
-    server.send(404, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title></head><body style=\"font-family:Verdana;\"><table class=\"s777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp DataVideo Tally Serwer</h1></td></tr></table><br>404 - strona nie znaleziona</body></html>");
+    server.send(404, "text/html", "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>DataVideo Tally Serwer</title><style>#staticIP {accent-color: #07b50c;}.s777777 h1,.s777777 h2 {color: #07b50c;}.fr{float: right}body {display: flex;align-items: center;justify-content: center;width: 100vw;overflow-x: hidden;font-family: \"Arial\", sans-serif;background-color: #242424;color: #fff;table {width: 80%;max-width: 1200px;background-color: #3b3b3b;padding: 20px;margin: 20px;border-radius: 10px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);border-radius: 12px;overflow: hidden;border-spacing: 0;padding: 5px 45px;box-sizing: border-box;}tr.s777777 {background-color: transparent;color: #07b50c !important;}tr.cccccc {background-color: transparent;} tr.cccccc p {font-size: 16px;}input[type=\"checkbox\"] {width: 17.5px;aspect-ratio: 1;cursor: pointer;}td {cursor: default;user-select: none;}input {border-radius: 6px;cursor: text;}select {border-radius: 6px;cursor: pointer;}td.fr input {background-color: #07b50c !important; -webkit-appearance: none; accent-color: #07b50c !important;color: white;padding: 7px 17px;cursor: pointer;}* {line-height: 1.2;}@media screen and (max-width: 730px) {body {width: 100vw;margin: 0;padding: 10px;}table {width: 100%;padding: 0 10px;margin: 0;}}</style></head><body style=\"font-family:Verdana;\"><table class=\"s777777\"border=\"0\"width=\"100%\"cellpadding=\"1\"style=\"color:#ffffff;font-size:.8em;\"><tr><td><h1>&nbsp DataVideo Tally Serwer</h1></td></tr><tr></tr><tr><td><h2 style=\"color: white;\">404 - strona nie znaleziona</h2></td></tr></table></body></html>");
 }
 
 String getSSID()
