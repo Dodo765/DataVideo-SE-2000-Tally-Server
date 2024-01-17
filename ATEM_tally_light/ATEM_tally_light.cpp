@@ -1,19 +1,19 @@
 #include "ATEM_tally_light.hpp"
+#include <Arduino.h>
 
-#ifndef VERSION
+// FIRMWARE VERSION !!!
+//
+
+float firmware_version = 0.12;
+
+//
+//
+
 #define VERSION "dev"
-#endif
-
 #define FASTLED_ALLOW_INTERRUPTS 0
-
-#ifndef CHIP_FAMILY
-#define CHIP_FAMILY "Unknown"
-#endif
-
 #define DISPLAY_NAME "Tally Test server"
 
 // Include libraries:
-
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -25,7 +25,6 @@
 #include <TallyServer.h>
 #include <FastLED.h>
 
-float firmware_version = 0.11;
 #define VERSION_CHECK_URL "http://api.dominikkawalec.pl:3000/datavideo/firmware/version"
 #define FIRMWARE_URL "api.dominikkawalec.pl", 3000, "/datavideo/firmware/firmware.bin"
 
@@ -98,6 +97,8 @@ struct Settings
     uint8_t neopixelStatusLEDOption;
     uint8_t neopixelBrightness;
     uint8_t ledBrightness;
+    char updateURL[32] = "";
+    int updateURLPort;
 };
 
 Settings settings;
@@ -131,9 +132,14 @@ float getRemoteFirmwareVersion()
 {
     WiFiClient client;
     HTTPClient http;
-    if (http.begin(client, VERSION_CHECK_URL))
+
+    String fullURL = settings.updateURL;
+    fullURL += ":";
+    fullURL += String(settings.updateURLPort);
+    fullURL += "/datavideo/firmware/version";
+
+    if (http.begin(client, fullURL))
     {
-        Serial.println(http.GET());
         int httpCode = http.GET();
         if (httpCode == HTTP_CODE_OK)
         {
@@ -146,6 +152,17 @@ float getRemoteFirmwareVersion()
         }
     }
     return 0; // Return empty string if unable to fetch version
+}
+void removePrefix(char *url)
+{
+    if (strncmp(url, "http://", 7) == 0)
+    {
+        memmove(url, url + 7, strlen(url) - 6);
+    }
+    else if (strncmp(url, "https://", 8) == 0)
+    {
+        memmove(url, url + 8, strlen(url) - 7);
+    }
 }
 
 void updateSoftware()
@@ -171,8 +188,12 @@ void updateSoftware()
 
         ESPhttpUpdate.rebootOnUpdate(false); // remove automatic update
 
+        char *shortURL = settings.updateURL;
+        removePrefix(shortURL);
+        Serial.println(shortURL);
+
         // Specify the server IP, port, and firmware path for update
-        t_httpUpdate_return ret = ESPhttpUpdate.update(client, FIRMWARE_URL);
+        t_httpUpdate_return ret = ESPhttpUpdate.update(client, String(shortURL), uint16_t(settings.updateURLPort), String("/datavideo/firmware/firmware.bin"));
 
         switch (ret)
         {
@@ -270,6 +291,7 @@ void setup()
 
     // Start Serial
     Serial.begin(115200);
+    Serial.print("\033[2J\033[H");
     Serial.println("########################");
     Serial.println("Serial started");
 
@@ -351,7 +373,7 @@ void loop()
             Serial.println("IP:                  " + WiFi.localIP().toString());
             Serial.println("Subnet Mask:         " + WiFi.subnetMask().toString());
             Serial.println("Gateway IP:          " + WiFi.gatewayIP().toString());
-
+            Serial.println("------------------------");
             Serial.println();
             Serial.print(F("Current firmware version: "));
             Serial.println(firmware_version);
@@ -643,6 +665,12 @@ void handleRoot()
     html += "\"required/>. <input class=\"tIP\"type=\"text\"size=\"3\"maxlength=\"3\"name=\"gate4\"pattern=\"\\d{0,3}\"value=\"";
     html += settings.tallyGateway[3];
     html += "\"required/></td></tr>";
+    html += "<tr><td>Adres URL do serwera aktualizacji</td><td><input type=\"text\" size=\"34\" maxlength=\"30\" name=\"updateURL\" value=\"";
+    html += settings.updateURL;
+    html += "\" required></td></tr>";
+    html += "<tr ><td>Port serwera aktualizacji</td><td><input type=\"number\" size=\"5\" min=\"1\" max=\"65536\" name=\"updateURLPort\" value=\"";
+    html += settings.updateURLPort;
+    html += "\" required></td></tr>";
 
     html += "<tr><td><br></td></tr><tr><td/><td class=\"fr\"><input type=\"submit\"value=\"Zapisz zmiany\"/></td></tr></form><tr class=\"cccccc\" style=\"font-size: .8em;\"><td colspan=\"3\"><p>&nbsp;Stworzone przez <a href=\"https://github.com/Dodo765\" target=\"_blank\">Dominik Kawalec</a></p><p>&nbsp;Napisane w oparciu o bibliotekę <a href=\"https://github.com/kasperskaarhoj/SKAARHOJ-Open-Engineering/tree/master/ArduinoLibs\" target=\"_blank\">SKAARHOJ</a></p></td></tr></table></body></html>";
     server.send(200, "text/html", html);
@@ -773,6 +801,14 @@ void handleSave()
             else if (var == "aIP4")
             {
                 settings.switcherIP[3] = val.toInt();
+            }
+            else if (var == "updateURL")
+            {
+                val.toCharArray(settings.updateURL, (uint8_t)32);
+            }
+            else if (var == "updateURLPort")
+            {
+                settings.updateURLPort = val.toInt();
             }
         }
 
